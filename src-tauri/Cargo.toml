@@ -1,0 +1,52 @@
+[package]
+name = "local-efficiency-tools"
+version = "0.1.0"
+description = "本地效率工具"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "tauri_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+regex = "1"
+reqwest = { version = "0.13.3", features = ["blocking", "stream"] }
+sha2 = "0.10"
+sysinfo = "0.38.4"
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4"] }
+tauri-plugin-single-instance = "2.4.2"
+zip = "8.6.0"
+
+[target.'cfg(windows)'.dependencies]
+windows-service = "0.8.1"
+windows-sys = { version = "0.61.2", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Security_Authorization",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_System_Pipes",
+] }
+
+
+[profile.release]
+#panic = "abort"      # 发生 panic 时直接退出，减少清理代码 (节省 ~0.5MB)
+codegen-units = 1    # 限制并行编译单元，允许编译器进行全局优化
+lto = true           # 开启链接时优化 (Link Time Optimization)
+opt-level = "z"      # 专门针对二进制体积进行优化 ("s" 为体积优先，"z" 更激进)
+strip = true         # 自动移除调试符号 (非常关键，能减少 20%-40% 的体积)
