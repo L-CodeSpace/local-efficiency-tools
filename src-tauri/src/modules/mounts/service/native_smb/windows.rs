@@ -23,6 +23,7 @@ pub(super) fn repair_workspace(
                         remote,
                         target: PathBuf::from(format!("{}\\", drive)),
                         display_target: None,
+                        marker_path: None,
                     },
                 );
             }
@@ -58,6 +59,7 @@ pub(super) fn mount_binding(
                 remote,
                 target: PathBuf::from(format!("{}\\", drive)),
                 display_target: None,
+                marker_path: None,
             });
         }
         return Err(AppError::new(
@@ -112,6 +114,7 @@ pub(super) fn mount_binding(
         remote,
         target: PathBuf::from(format!("{}\\", drive)),
         display_target: None,
+        marker_path: None,
     })
 }
 

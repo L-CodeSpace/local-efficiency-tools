@@ -53,6 +53,7 @@ pub struct NativeSmbMount {
     pub remote: String,
     pub target: PathBuf,
     pub display_target: Option<PathBuf>,
+    pub marker_path: Option<PathBuf>,
 }
 
 impl AppState {
