@@ -7,7 +7,7 @@
 use tauri::AppHandle;
 
 use crate::{
-    modules::mounts::{dto::BackgroundSettings, service::profiles},
+    modules::mounts::{dto::BackgroundSettings, service::workspaces},
     shared::error::AppError,
 };
 
@@ -17,7 +17,7 @@ use crate::{
 /// 返回含义：返回关闭窗口时是否允许隐藏到托盘。
 #[tauri::command]
 pub fn app_settings_get_background(app: AppHandle) -> Result<BackgroundSettings, AppError> {
-    profiles::get_background_settings(&app)
+    workspaces::get_background_settings(&app)
 }
 
 /// 更新后台运行设置。
@@ -29,5 +29,5 @@ pub fn app_settings_set_background(
     app: AppHandle,
     enabled: bool,
 ) -> Result<BackgroundSettings, AppError> {
-    profiles::set_background_enabled(&app, enabled)
+    workspaces::set_background_enabled(&app, enabled)
 }

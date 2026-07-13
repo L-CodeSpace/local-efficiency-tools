@@ -37,10 +37,12 @@ import {
   type DropChoice,
   type DropClassification,
 } from "./GlobalDropRouter/drop-helpers";
+import { useI18n } from "@/shared/i18n";
 
 const maxDropPreviewDepth = 1;
 
 export function GlobalDropRouter() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [dragActive, setDragActive] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -50,7 +52,7 @@ export function GlobalDropRouter() {
     (kind: DroppedMediaKind, classification: DropClassification) => {
       const source = sourceForKind(kind, classification);
       if (!source) {
-        toast.error("未发现可处理的图片或视频");
+        toast.error(t("未发现可处理的图片或视频"));
         return;
       }
 
@@ -62,7 +64,7 @@ export function GlobalDropRouter() {
       navigate(kind === "image" ? "/image-compressor" : "/video-compressor");
       logInfo(`已通过拖拽导入${kind === "image" ? "图片" : "视频"}来源`);
     },
-    [navigate],
+    [navigate, t],
   );
 
   const handleDrop = useCallback(
@@ -92,7 +94,7 @@ export function GlobalDropRouter() {
           return;
         }
 
-        toast.info("未发现可处理的图片或视频");
+        toast.info(t("未发现可处理的图片或视频"));
         logInfo("拖拽导入未发现可处理的图片或视频");
       } catch (err) {
         const message = formatError(err);
@@ -102,7 +104,7 @@ export function GlobalDropRouter() {
         setBusy(false);
       }
     },
-    [routeDrop],
+    [routeDrop, t],
   );
 
   useEffect(() => {
@@ -147,10 +149,10 @@ export function GlobalDropRouter() {
               <Upload className="h-8 w-8 text-primary" />
             )}
             <div className="text-base font-semibold">
-              {busy ? "正在识别拖拽内容" : "释放以导入文件或文件夹"}
+              {busy ? t("正在识别拖拽内容") : t("释放以导入文件或文件夹")}
             </div>
             <div className="text-sm text-muted-foreground">
-              支持图片、视频和包含媒体的文件夹
+              {t("支持图片、视频和包含媒体的文件夹")}
             </div>
           </div>
         </div>
@@ -159,9 +161,9 @@ export function GlobalDropRouter() {
       <Dialog open={Boolean(choice)} onOpenChange={(open) => !open && setChoice(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>选择处理类型</DialogTitle>
+            <DialogTitle>{t("选择处理类型")}</DialogTitle>
             <DialogDescription>
-              {choice?.summary ?? "拖拽内容中同时发现图片和视频，请选择要导入的处理页面。"}
+              {choice?.summary ? t(choice.summary.text, choice.summary.vars) : t("拖拽内容中同时发现图片和视频，请选择要导入的处理页面。")}
             </DialogDescription>
           </DialogHeader>
 
@@ -176,8 +178,8 @@ export function GlobalDropRouter() {
             >
               <FileImage className="h-6 w-6 text-primary" />
               <span>
-                <span className="block font-medium">处理图片</span>
-                <span className="text-sm text-muted-foreground">{imageCount} 个图片来源</span>
+                <span className="block font-medium">{t("处理图片")}</span>
+                <span className="text-sm text-muted-foreground">{t("{count} 个图片来源", { count: imageCount })}</span>
               </span>
             </button>
             <button
@@ -190,15 +192,15 @@ export function GlobalDropRouter() {
             >
               <FileVideo className="h-6 w-6 text-primary" />
               <span>
-                <span className="block font-medium">处理视频</span>
-                <span className="text-sm text-muted-foreground">{videoCount} 个视频来源</span>
+                <span className="block font-medium">{t("处理视频")}</span>
+                <span className="text-sm text-muted-foreground">{t("{count} 个视频来源", { count: videoCount })}</span>
               </span>
             </button>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setChoice(null)}>
-              取消
+              {t("取消")}
             </Button>
           </DialogFooter>
         </DialogContent>

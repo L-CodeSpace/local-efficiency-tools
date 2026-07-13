@@ -28,17 +28,31 @@ pub struct AppState {
     pub hosts_plans: Arc<Mutex<HashMap<String, StoredHostsChangePlan>>>,
     pub media_plans: Arc<Mutex<HashMap<String, StoredMediaPlan>>>,
     pub job_processes: Arc<Mutex<HashMap<String, Vec<Child>>>>,
-    pub mount_processes: Arc<Mutex<HashMap<String, MountProcess>>>,
+    pub mount_sessions: Arc<Mutex<HashMap<String, MountSession>>>,
     pub shutdown_started: Arc<AtomicBool>,
 }
 
-pub struct MountProcess {
-    pub child: Child,
-    pub profile_id: String,
-    pub profile_name: String,
+pub enum MountSession {
+    NativeSmb {
+        workspace_id: String,
+        workspace_name: String,
+        mounts: Vec<NativeSmbMount>,
+    },
+    FtpCombine {
+        child: Child,
+        workspace_id: String,
+        workspace_name: String,
+        target: PathBuf,
+        display_target: Option<PathBuf>,
+        rc_addr: Option<String>,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub struct NativeSmbMount {
+    pub remote: String,
     pub target: PathBuf,
     pub display_target: Option<PathBuf>,
-    pub network_mode: bool,
 }
 
 impl AppState {

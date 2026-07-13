@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { useI18n } from "@/shared/i18n";
 
 export function TargetCard({ checked, onToggle, icon, label }: { checked: boolean; onToggle: () => void; icon: ReactNode; label: ReactNode }) {
   return (
@@ -20,27 +21,31 @@ export function TargetCard({ checked, onToggle, icon, label }: { checked: boolea
 }
 
 export function SliderBlock({ label, value, min, max, onChange, help }: { label: string; value: number; min: number; max: number; onChange: (value: number) => void; help?: string }) {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-4 border-t pt-4">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">{label}</Label>
+        <Label className="text-sm font-medium">{t(label)}</Label>
         <span className="text-sm font-bold text-primary">{value}</span>
       </div>
       <Slider value={[value]} onValueChange={(next) => onChange(next[0])} min={min} max={max} step={1} />
-      {help ? <p className="text-xs text-muted-foreground">{help}</p> : null}
+      {help ? <p className="text-xs text-muted-foreground">{t(help)}</p> : null}
     </div>
   );
 }
 
 export function MiniSlider({ label, value, max, onChange, help }: { label: string; value: number; max: number; onChange: (value: number) => void; help: string }) {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between">
-        <Label className="text-xs">{label}</Label>
+        <Label className="text-xs">{t(label)}</Label>
         <span className="text-xs">{value.toFixed(1)}</span>
       </div>
       <Slider value={[value]} onValueChange={(next) => onChange(next[0])} min={0} max={max} step={0.1} />
-      <p className="text-[10px] text-muted-foreground">{help}</p>
+      <p className="text-[10px] text-muted-foreground">{t(help)}</p>
     </div>
   );
 }

@@ -15,12 +15,14 @@ import { formatError } from "@/shared/utils/error";
 import { useJobFeed } from "@/shared/state/useJobFeed";
 import { clearPendingMediaDrop, usePendingMediaDrop } from "@/shared/state/mediaDrop";
 import { imageExtensions, plannedImageOutputPaths } from "@/shared/utils/media";
+import { useI18n } from "@/shared/i18n";
 
 type SelectedImageSource =
   | { type: "files"; paths: string[] }
   | { type: "folder"; path: string };
 
 export function useImageCompressorPage() {
+  const { t } = useI18n();
   const [selectedSource, setSelectedSource] = useState<SelectedImageSource | null>(null);
   const [outputDir, setOutputDir] = useState("");
   const [format, setFormat] = useState<ImageOutputFormat>("webp");
@@ -89,7 +91,7 @@ export function useImageCompressorPage() {
   const selectFiles = async () => {
     const selected = await open({
       multiple: true,
-      filters: [{ name: "图片文件", extensions: imageExtensions }],
+      filters: [{ name: t("图片文件"), extensions: imageExtensions }],
     });
     if (!selected) return;
     const paths = (Array.isArray(selected) ? selected : [selected]).filter((path) => {
@@ -97,7 +99,7 @@ export function useImageCompressorPage() {
       return !!ext && imageExtensions.includes(ext);
     });
     if (paths.length === 0) {
-      setError("请选择受支持的图片格式，不支持视频或其他文件。");
+      setError(t("请选择受支持的图片格式，不支持视频或其他文件。"));
       return;
     }
     await fileAuthorizePath({ path: paths[0], label: "图片来源" });

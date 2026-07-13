@@ -16,6 +16,7 @@ import { useJobFeed } from "@/shared/state/useJobFeed";
 import { clearPendingMediaDrop, usePendingMediaDrop } from "@/shared/state/mediaDrop";
 import { plannedVideoOutputPaths, videoExtensions } from "@/shared/utils/media";
 import { formatError } from "@/shared/utils/error";
+import { useI18n } from "@/shared/i18n";
 import {
   clampAv1SpeedForEncoder,
   selectedTargets,
@@ -26,6 +27,7 @@ import { useVideoProbeDetails } from "./hooks/probe";
 import { useAv1Settings } from "./hooks/av1";
 
 export function useVideoCompressorPage() {
+  const { t } = useI18n();
   const [selectedSource, setSelectedSource] = useState<SelectedVideoSource | null>(null);
   const [outputDir, setOutputDir] = useState("");
   const [targets, setTargets] = useState<VideoTargets>({ webp: true, av1: true, av1_an: false, mp3: false });
@@ -152,7 +154,7 @@ export function useVideoCompressorPage() {
   const selectSource = async (folder: boolean) => {
     const selected = await open({
       directory: folder,
-      filters: folder ? undefined : [{ name: "视频文件", extensions: videoExtensions }],
+      filters: folder ? undefined : [{ name: t("视频文件"), extensions: videoExtensions }],
     });
     if (!selected || typeof selected !== "string") return;
     await fileAuthorizePath({ path: selected, label: folder ? "视频文件夹" : "视频来源" });
@@ -247,7 +249,6 @@ export function useVideoCompressorPage() {
     av1Speed: av1.av1Speed,
     setAv1Speed: av1.setAv1Speed,
     av1Preset: av1.av1Preset,
-    currentAv1Summary: av1.currentAv1Summary,
     av1Crf: av1.av1Crf,
     setAv1Crf: av1.setAv1Crf,
     av1Threads: av1.av1Threads,

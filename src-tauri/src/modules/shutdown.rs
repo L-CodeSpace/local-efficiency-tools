@@ -9,10 +9,7 @@ use std::sync::atomic::Ordering;
 use tauri::AppHandle;
 
 use crate::{
-    modules::{
-        jobs::service as jobs_service, mounts::service::processes as mount_processes,
-        state::AppState,
-    },
+    modules::{jobs::service as jobs_service, mounts::service::workspaces, state::AppState},
     observability,
 };
 
@@ -33,6 +30,6 @@ pub fn cleanup_before_exit(app: &AppHandle, state: &AppState) {
         }
     }
 
-    mount_processes::stop_all(app, state);
+    workspaces::stop_all_workspaces(app, state);
     observability::emit_info(app, "运行时资源清理完成。");
 }

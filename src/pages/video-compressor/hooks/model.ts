@@ -74,20 +74,3 @@ export function clampAv1SpeedForEncoder(value: number, encoder: VideoAv1Encoder)
   const meta = av1PresetMeta(encoder);
   return clampNumber(value, meta.min, meta.max);
 }
-
-export function currentAv1SettingsSummary(
-  encoder: VideoAv1Encoder,
-  speed: number,
-  cq: number,
-  concurrency: number,
-) {
-  const encoderLabel =
-    encoder === "av1Nvenc"
-      ? "NVIDIA AV1 (NVENC)"
-      : encoder === "libSvtAv1"
-        ? "SVT-AV1"
-        : "libaom-av1";
-  const preset = encoder === "av1Nvenc" ? `p${speed}` : String(speed);
-  const qualityLabel = encoder === "av1Nvenc" ? "CQ" : "CRF";
-  return `${encoderLabel} · ${preset} · ${qualityLabel} ${cq} · 并发 ${concurrency}`;
-}

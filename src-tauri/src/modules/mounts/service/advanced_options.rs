@@ -4,21 +4,7 @@
  * 能力边界：只处理 profile 内的高级挂载参数，不读取文件或启动进程。
  */
 
-use super::normalize::trim_to_option;
 use super::*;
-
-pub(super) fn normalize_cache_mode(value: Option<String>) -> String {
-    match trim_to_option(value)
-        .unwrap_or_else(|| "full".to_string())
-        .to_ascii_lowercase()
-        .as_str()
-    {
-        "off" => "off".to_string(),
-        "minimal" => "minimal".to_string(),
-        "writes" => "writes".to_string(),
-        _ => "full".to_string(),
-    }
-}
 
 pub(super) fn normalize_advanced_options(
     input: Option<MountAdvancedOptions>,
@@ -26,6 +12,7 @@ pub(super) fn normalize_advanced_options(
 ) -> AppResult<MountAdvancedOptions> {
     let mut options =
         input.unwrap_or_else(|| recommended_advanced_options_for_target(target_is_drive));
+    options.dir_cache_time = normalize_duration(options.dir_cache_time, "目录缓存时间")?;
     options.vfs_cache_max_size = normalize_size_suffix(options.vfs_cache_max_size, "VFS 缓存上限")?;
     options.vfs_cache_max_age = normalize_duration(options.vfs_cache_max_age, "VFS 缓存保留时间")?;
     options.vfs_read_chunk_size = normalize_size_suffix(options.vfs_read_chunk_size, "读取块大小")?;

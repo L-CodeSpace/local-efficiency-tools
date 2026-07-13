@@ -11,7 +11,7 @@ use tauri::{
 };
 
 use crate::{
-    modules::{mounts::service::profiles as mount_profiles, shutdown, state::AppState},
+    modules::{mounts::service::workspaces, shutdown, state::AppState},
     observability,
 };
 
@@ -30,10 +30,10 @@ pub fn setup(app: &tauri::App) -> tauri::Result<()> {
             "show" => show_main_window(app),
             "unmount_all" => {
                 let state = app.state::<AppState>().inner().clone();
-                match mount_profiles::unmount_all(app.clone(), state) {
-                    Ok(()) => observability::emit_info(app, "已卸载全部 rclone 挂载。"),
+                match workspaces::unmount_all_workspaces(app, &state) {
+                    Ok(()) => observability::emit_info(app, "已卸载全部远程挂载。"),
                     Err(error) => {
-                        observability::emit_info(app, format!("卸载 rclone 挂载失败: {}", error));
+                        observability::emit_info(app, format!("卸载全部远程挂载失败: {}", error))
                     }
                 }
             }

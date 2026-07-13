@@ -6,13 +6,16 @@
 
 use tauri::Manager;
 
-use crate::modules::{mounts::service::processes as mount_processes, shutdown, state::AppState};
+use crate::modules::{mounts::service::workspaces, shutdown, state::AppState};
+
+const STARTUP_MOUNT_RESTORE_DELAY: std::time::Duration = std::time::Duration::from_secs(2);
 
 pub fn restore_background_mounts(app: &tauri::App) {
     let app_handle = app.handle().clone();
     let state = app.state::<AppState>().inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
-        mount_processes::restore_enabled_mounts(app_handle, state);
+        std::thread::sleep(STARTUP_MOUNT_RESTORE_DELAY);
+        workspaces::restore_enabled_workspaces(app_handle, state);
     });
 }
 

@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/shared/i18n";
 import { dirname } from "@/shared/utils/path";
 
 export function ArtifactPathList({
@@ -10,6 +11,8 @@ export function ArtifactPathList({
   paths: string[];
   emptyMessage: string;
 }) {
+  const { t } = useI18n();
+
   return (
     <div className="rounded-md border bg-muted p-3 font-mono text-sm">
       {paths.length > 0 ? (
@@ -17,7 +20,7 @@ export function ArtifactPathList({
           {paths.map((path, index) => (
             <div key={`${path}-${index}`} className="flex items-center justify-between gap-2">
               <span className="break-all">{path}</span>
-              <Button variant="ghost" size="icon-xs" title="打开所在位置" onClick={() => revealAvailableLocation(path)}>
+              <Button variant="ghost" size="icon-xs" title={t("打开所在位置")} onClick={() => revealAvailableLocation(path)}>
                 <ExternalLink className="h-3 w-3" />
               </Button>
             </div>

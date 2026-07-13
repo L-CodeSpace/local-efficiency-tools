@@ -18,6 +18,17 @@ export type BackgroundSettings = {
   enabled: boolean
 }
 
+export type ConnectionProbeResult = {
+  connectionId: string
+  smb: TransportProbeResult
+  ftp: TransportProbeResult
+  recommendedTransport?: EffectiveTransport | undefined
+  fallbackReason?: string | undefined
+  probedAt: number
+}
+
+export type EffectiveTransport = 'nativeSmb' | 'ftpCombine'
+
 export type FileEntry = {
   name: string
   path: string
@@ -278,6 +289,7 @@ export type MediaRuntimeStatus = {
 }
 
 export type MountAdvancedOptions = {
+  dirCacheTime: string
   vfsCacheMaxSize: string
   vfsCacheMaxAge: string
   vfsReadChunkSize: string
@@ -303,68 +315,6 @@ export type MountDependencyStatus = {
 
 export type MountPlatform = 'windows' | 'macos' | 'linux' | 'unknown'
 
-export type MountProfile = {
-  id: string
-  name: string
-  protocol: MountProtocol
-  remoteName: string
-  host?: string | undefined
-  port?: number | undefined
-  username?: string | undefined
-  password?: string | undefined
-  url?: string | undefined
-  vendor?: string | undefined
-  keyFile?: string | undefined
-  remotePath?: string | undefined
-  mountPoint?: string | undefined
-  driveLetter?: string | undefined
-  tlsMode?: string | undefined
-  noCheckCertificate: boolean
-  readOnly: boolean
-  cacheMode: string
-  advancedOptions: MountAdvancedOptions
-  enabled: boolean
-  createdAt: number
-  updatedAt: number
-  mounted: boolean
-  status: MountStatus
-  error?: string | undefined
-}
-
-export type MountProfileInput = {
-  id?: string | undefined
-  name: string
-  protocol: MountProtocol
-  host?: string | undefined
-  port?: number | undefined
-  username?: string | undefined
-  password?: string | undefined
-  url?: string | undefined
-  vendor?: string | undefined
-  keyFile?: string | undefined
-  remotePath?: string | undefined
-  mountPoint?: string | undefined
-  driveLetter?: string | undefined
-  tlsMode?: string | undefined
-  noCheckCertificate?: boolean | undefined
-  readOnly?: boolean | undefined
-  cacheMode?: string | undefined
-  advancedOptions?: MountAdvancedOptions | undefined
-  enabled?: boolean | undefined
-}
-
-export type MountProfileLog = {
-  profileId: string
-  profileName: string
-  path: string
-  exists: boolean
-  sizeBytes: number
-  modifiedAt?: number | undefined
-  content: string
-}
-
-export type MountProtocol = 'ftp' | 'sftp' | 'webdav'
-
 export type MountRuntimeStatus = {
   installed: boolean
   version?: string | undefined
@@ -378,16 +328,12 @@ export type MountRuntimeStatus = {
 
 export type MountStatus = 'disabled' | 'stopped' | 'mounted'
 
-export type MountTestResult = {
-  success: boolean
-  message: string
-}
-
 export type MountUiContext = {
   platform: MountPlatform
   defaultMountRoot: string
   defaultMountExample: string
   defaultDriveLetter?: string | undefined
+  defaultDriveLetters?: string[] | undefined
   configDir: string
   profileConfigPath: string
   rcloneConfigPath: string
@@ -395,7 +341,92 @@ export type MountUiContext = {
   message: string
 }
 
+export type MountWorkspace = {
+  id: string
+  connectionId: string
+  name: string
+  bindings: RemoteBinding[]
+  driveLetter?: string | undefined
+  mountPoint?: string | undefined
+  advancedOptions: MountAdvancedOptions
+  enabled: boolean
+  createdAt: number
+  updatedAt: number
+  effectiveTransport?: EffectiveTransport | undefined
+  mounted: boolean
+  status: MountStatus
+  error?: string | undefined
+}
+
+export type MountWorkspaceInput = {
+  id?: string | undefined
+  connectionId: string
+  name: string
+  bindings: RemoteBindingInput[]
+  driveLetter?: string | undefined
+  mountPoint?: string | undefined
+  advancedOptions?: MountAdvancedOptions | undefined
+  enabled?: boolean | undefined
+  effectiveTransport?: EffectiveTransport | undefined
+}
+
 export type OperationRisk = 'low' | 'medium' | 'high'
+
+export type ProbeShareEntry = {
+  name: string
+  path: string
+  accessible: boolean
+  error?: string | undefined
+  suggestedDriveLetter?: string | undefined
+  suggestedMountPoint?: string | undefined
+}
+
+export type RemoteBinding = {
+  id: string
+  name: string
+  remotePath: string
+  driveLetter?: string | undefined
+  mountPoint?: string | undefined
+  accessible: boolean
+  error?: string | undefined
+}
+
+export type RemoteBindingInput = {
+  name: string
+  remotePath: string
+  driveLetter?: string | undefined
+  mountPoint?: string | undefined
+}
+
+export type RemoteConnection = {
+  id: string
+  name: string
+  host: string
+  username: string
+  password?: string | undefined
+  domain?: string | undefined
+  ftpPort: number
+  smbPort: number
+  tlsMode?: string | undefined
+  noCheckCertificate: boolean
+  transportPreference: TransportPreference
+  createdAt: number
+  updatedAt: number
+}
+
+export type RemoteConnectionInput = {
+  id?: string | undefined
+  name: string
+  host: string
+  username: string
+  password?: string | undefined
+  domain?: string | undefined
+  ftpPort?: number | undefined
+  smbPort?: number | undefined
+  tlsMode?: string | undefined
+  noCheckCertificate?: boolean | undefined
+  transportPreference?: TransportPreference | undefined
+}
 
 export type RenameExecuteRequest = {
   planId: string
@@ -435,6 +466,16 @@ export type SystemOverview = {
   currentDir: string
   platform: string
   runtimePolicy: string
+}
+
+export type TransportPreference = 'auto' | 'smb' | 'ftp'
+
+export type TransportProbeResult = {
+  available: boolean
+  authenticated: boolean
+  message: string
+  rawOutput: string
+  entries: ProbeShareEntry[]
 }
 
 export type VideoAv1Encoder = 'auto' | 'av1Nvenc' | 'libSvtAv1' | 'libAomAv1'

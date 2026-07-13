@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { type FileEntry } from "@/api_tauri";
+import { useI18n } from "@/shared/i18n";
 import { logError } from "@/shared/state/logStore";
 import { formatError } from "@/shared/utils/error";
 import { formatBytes, formatDate, joinPath } from "@/shared/utils/path";
@@ -24,6 +25,7 @@ import type { Modal } from "./index/types";
 
 export default function FileManagerPage() {
   const page = useFileManagerPage();
+  const { t } = useI18n();
   const [modal, setModal] = useState<Modal>({ kind: "none" });
   const [inputVal, setInputVal] = useState("");
   const [editContent, setEditContent] = useState("");
@@ -55,26 +57,26 @@ export default function FileManagerPage() {
     if (modal.kind !== "rename") return;
     const name = inputVal.trim();
     if (!name) return;
-    await runAction(() => page.executeOperation({ kind: "rename", path: modal.entry.path, newName: name }), `已重命名为 ${name}`);
+    await runAction(() => page.executeOperation({ kind: "rename", path: modal.entry.path, newName: name }), t("已重命名为 {name}", { name }));
   };
 
   const handleNewFile = async () => {
     const name = inputVal.trim();
     if (!name) return;
-    await runAction(() => page.executeOperation({ kind: "createFile", path: joinPath(page.path, name) }), `已创建 ${name}`);
+    await runAction(() => page.executeOperation({ kind: "createFile", path: joinPath(page.path, name) }), t("已创建 {name}", { name }));
   };
 
   const handleNewDir = async () => {
     const name = inputVal.trim();
     if (!name) return;
-    await runAction(() => page.executeOperation({ kind: "createDir", path: joinPath(page.path, name) }), `已创建文件夹 ${name}`);
+    await runAction(() => page.executeOperation({ kind: "createDir", path: joinPath(page.path, name) }), t("已创建文件夹 {name}", { name }));
   };
 
   const handleDelete = async () => {
     if (modal.kind !== "delete") return;
     await runAction(
       () => page.executeOperation({ kind: "delete", path: modal.entry.path, recursive: modal.entry.isDir }),
-      `已删除 ${modal.entry.name}`,
+      t("已删除 {name}", { name: modal.entry.name }),
     );
   };
 
@@ -83,7 +85,7 @@ export default function FileManagerPage() {
     setSaving(true);
     try {
       await page.executeOperation({ kind: "writeText", path: modal.entry.path, content: editContent });
-      toast.success(`已保存 ${modal.entry.name}`);
+      toast.success(t("已保存 {name}", { name: modal.entry.name }));
       setModal({ kind: "none" });
     } catch (err) {
       const message = formatError(err);
@@ -112,21 +114,21 @@ export default function FileManagerPage() {
     <div className="space-y-6 px-6 pb-12 animate-in fade-in duration-300">
       <div className="sticky top-0 z-10 -mx-6 flex flex-col justify-between gap-4 border-b bg-background/95 px-6 py-6 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">文件管理</h1>
-          <p className="mt-1 text-muted-foreground">浏览、编辑、创建和删除文件与目录</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("文件管理")}</h1>
+          <p className="mt-1 text-muted-foreground">{t("浏览、编辑、创建和删除文件与目录")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={page.pickDir}>
-            <FolderOpen className="h-4 w-4" /> 选择目录
+            <FolderOpen className="h-4 w-4" /> {t("选择目录")}
           </Button>
           {page.exeDir ? (
             <Button variant="outline" size="sm" onClick={() => page.navigate(page.exeDir)} title={page.exeDir}>
-              <Settings className="h-4 w-4" /> 程序目录
+              <Settings className="h-4 w-4" /> {t("程序目录")}
             </Button>
           ) : null}
           {page.cwd ? (
             <Button variant="outline" size="sm" onClick={() => page.navigate(page.cwd)} title={page.cwd}>
-              <Home className="h-4 w-4" /> 工作目录
+              <Home className="h-4 w-4" /> {t("工作目录")}
             </Button>
           ) : null}
         </div>
@@ -134,8 +136,8 @@ export default function FileManagerPage() {
 
       {(page.exeDir || page.cwd) ? (
         <div className="flex flex-wrap gap-3">
-          {page.exeDir ? <Badge variant="secondary" className="font-mono text-xs font-normal" title={page.exeDir}>程序路径 {page.exeDir}</Badge> : null}
-          {page.cwd ? <Badge variant="secondary" className="font-mono text-xs font-normal" title={page.cwd}>工作目录 {page.cwd}</Badge> : null}
+          {page.exeDir ? <Badge variant="secondary" className="font-mono text-xs font-normal" title={page.exeDir}>{t("程序路径")} {page.exeDir}</Badge> : null}
+          {page.cwd ? <Badge variant="secondary" className="font-mono text-xs font-normal" title={page.cwd}>{t("工作目录")} {page.cwd}</Badge> : null}
         </div>
       ) : null}
 
@@ -159,10 +161,10 @@ export default function FileManagerPage() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => openModal({ kind: "new_file" })} disabled={!page.path}>
-              <FilePlus className="h-4 w-4" /> 新建文件
+              <FilePlus className="h-4 w-4" /> {t("新建文件")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => openModal({ kind: "new_dir" })} disabled={!page.path}>
-              <FolderPlus className="h-4 w-4" /> 新建文件夹
+              <FolderPlus className="h-4 w-4" /> {t("新建文件夹")}
             </Button>
             <Button variant="ghost" size="icon-sm" onClick={() => page.navigate(page.path)} disabled={!page.path || page.loading}>
               <RefreshCw className={`h-4 w-4 ${page.loading ? "animate-spin" : ""}`} />
@@ -174,16 +176,16 @@ export default function FileManagerPage() {
           {page.entries.length === 0 && !page.error && !page.loading ? (
             <div className="flex h-[400px] flex-col items-center justify-center text-muted-foreground">
               <FolderOpen className="mb-4 h-12 w-12 opacity-20" />
-              <p>当前目录为空</p>
+              <p>{t("当前目录为空")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[50%]">名称</TableHead>
-                  <TableHead>大小</TableHead>
-                  <TableHead>修改时间</TableHead>
-                  <TableHead className="text-right">操作</TableHead>
+                  <TableHead className="w-[50%]">{t("名称")}</TableHead>
+                  <TableHead>{t("大小")}</TableHead>
+                  <TableHead>{t("修改时间")}</TableHead>
+                  <TableHead className="text-right">{t("操作")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -199,7 +201,7 @@ export default function FileManagerPage() {
                         >
                           {entry.name}
                         </button>
-                        {entry.readonly ? <Badge variant="outline" className="h-5 px-1.5 text-[10px] opacity-70">只读</Badge> : null}
+                        {entry.readonly ? <Badge variant="outline" className="h-5 px-1.5 text-[10px] opacity-70">{t("只读")}</Badge> : null}
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">{entry.isDir ? "-" : formatBytes(entry.size)}</TableCell>
@@ -207,14 +209,14 @@ export default function FileManagerPage() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         {isTextEntry(entry) ? (
-                          <Button variant="ghost" size="icon-sm" className="text-blue-500 hover:bg-blue-50 hover:text-blue-600" onClick={() => handleOpen(entry)} title="编辑">
+                          <Button variant="ghost" size="icon-sm" className="text-blue-500 hover:bg-blue-50 hover:text-blue-600" onClick={() => handleOpen(entry)} title={t("编辑")}>
                             <Edit className="h-4 w-4" />
                           </Button>
                         ) : null}
-                        <Button variant="ghost" size="icon-sm" className="text-amber-500 hover:bg-amber-50 hover:text-amber-600" onClick={() => openModal({ kind: "rename", entry }, entry.name)} title="重命名">
+                        <Button variant="ghost" size="icon-sm" className="text-amber-500 hover:bg-amber-50 hover:text-amber-600" onClick={() => openModal({ kind: "rename", entry }, entry.name)} title={t("重命名")}>
                           <Type className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => openModal({ kind: "delete", entry })} title="删除">
+                        <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => openModal({ kind: "delete", entry })} title={t("删除")}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -234,29 +236,29 @@ export default function FileManagerPage() {
           {modal.kind === "delete" ? (
             <>
               <DialogHeader>
-                <DialogTitle>确认删除</DialogTitle>
+                <DialogTitle>{t("确认删除")}</DialogTitle>
                 <DialogDescription>
-                  {modal.entry.isDir ? `将永久删除文件夹「${modal.entry.name}」及其所有内容，此操作不可撤销。` : `将永久删除文件「${modal.entry.name}」，此操作不可撤销。`}
+                  {modal.entry.isDir ? t("将永久删除文件夹「{name}」及其所有内容，此操作不可撤销。", { name: modal.entry.name }) : t("将永久删除文件「{name}」，此操作不可撤销。", { name: modal.entry.name })}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="mt-4">
-                <Button variant="outline" onClick={() => setModal({ kind: "none" })}>取消</Button>
-                <Button variant="destructive" onClick={handleDelete}>确认删除</Button>
+                <Button variant="outline" onClick={() => setModal({ kind: "none" })}>{t("取消")}</Button>
+                <Button variant="destructive" onClick={handleDelete}>{t("确认删除")}</Button>
               </DialogFooter>
             </>
           ) : null}
           {modal.kind === "rename" ? (
             <>
-              <DialogHeader><DialogTitle>重命名</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t("重命名")}</DialogTitle></DialogHeader>
               <div className="py-4"><Input autoFocus value={inputVal} onChange={(event) => setInputVal(event.target.value)} onKeyDown={(event) => event.key === "Enter" && handleRename()} /></div>
-              <DialogFooter><Button variant="outline" onClick={() => setModal({ kind: "none" })}>取消</Button><Button onClick={handleRename} disabled={!inputVal.trim()}>确认</Button></DialogFooter>
+              <DialogFooter><Button variant="outline" onClick={() => setModal({ kind: "none" })}>{t("取消")}</Button><Button onClick={handleRename} disabled={!inputVal.trim()}>{t("确认")}</Button></DialogFooter>
             </>
           ) : null}
           {modal.kind === "new_file" || modal.kind === "new_dir" ? (
             <>
-              <DialogHeader><DialogTitle>{modal.kind === "new_file" ? "新建文件" : "新建文件夹"}</DialogTitle></DialogHeader>
-              <div className="py-4"><Input autoFocus placeholder={modal.kind === "new_file" ? "如：hello.txt" : "如：my-folder"} value={inputVal} onChange={(event) => setInputVal(event.target.value)} onKeyDown={(event) => event.key === "Enter" && (modal.kind === "new_file" ? handleNewFile() : handleNewDir())} /></div>
-              <DialogFooter><Button variant="outline" onClick={() => setModal({ kind: "none" })}>取消</Button><Button onClick={modal.kind === "new_file" ? handleNewFile : handleNewDir} disabled={!inputVal.trim()}>创建</Button></DialogFooter>
+              <DialogHeader><DialogTitle>{modal.kind === "new_file" ? t("新建文件") : t("新建文件夹")}</DialogTitle></DialogHeader>
+              <div className="py-4"><Input autoFocus placeholder={modal.kind === "new_file" ? t("如：hello.txt") : t("如：my-folder")} value={inputVal} onChange={(event) => setInputVal(event.target.value)} onKeyDown={(event) => event.key === "Enter" && (modal.kind === "new_file" ? handleNewFile() : handleNewDir())} /></div>
+              <DialogFooter><Button variant="outline" onClick={() => setModal({ kind: "none" })}>{t("取消")}</Button><Button onClick={modal.kind === "new_file" ? handleNewFile : handleNewDir} disabled={!inputVal.trim()}>{t("创建")}</Button></DialogFooter>
             </>
           ) : null}
         </DialogContent>
@@ -272,8 +274,8 @@ export default function FileManagerPage() {
                   {modal.entry.name}
                 </DialogTitle>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setModal({ kind: "none" })}><X className="h-4 w-4" /> 关闭</Button>
-                  <Button size="sm" onClick={handleSaveEdit} disabled={saving}><Save className="h-4 w-4" /> {saving ? "保存中..." : "保存"}</Button>
+                  <Button variant="outline" size="sm" onClick={() => setModal({ kind: "none" })}><X className="h-4 w-4" /> {t("关闭")}</Button>
+                  <Button size="sm" onClick={handleSaveEdit} disabled={saving}><Save className="h-4 w-4" /> {saving ? `${t("保存中")}...` : t("保存")}</Button>
                 </div>
               </div>
               <div className="relative flex-1 overflow-hidden bg-background p-0">

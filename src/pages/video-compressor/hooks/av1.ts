@@ -4,13 +4,12 @@
  * 能力边界：只处理 AV1 参数状态，不调用 IPC、不启动任务。
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MediaPerformanceProfile, VideoAv1Encoder } from "@/api_tauri";
 import {
   av1PresetMeta,
   clampAv1SpeedForEncoder,
   clampNumber,
-  currentAv1SettingsSummary,
   resolveEffectiveAv1Encoder,
 } from "./model";
 
@@ -25,16 +24,6 @@ export function useAv1Settings(performance: MediaPerformanceProfile | null) {
   const touched = useRef(false);
   const effectiveAv1Encoder = resolveEffectiveAv1Encoder(av1Encoder, performance);
   const av1Preset = av1PresetMeta(effectiveAv1Encoder);
-  const currentAv1Summary = useMemo(
-    () =>
-      currentAv1SettingsSummary(
-        effectiveAv1Encoder,
-        clampAv1SpeedForEncoder(av1Speed, effectiveAv1Encoder),
-        av1Crf,
-        videoConcurrency,
-      ),
-    [av1Crf, av1Speed, effectiveAv1Encoder, videoConcurrency],
-  );
 
   const applyRecommendedSettings = (profile = performance) => {
     if (!profile) return;
@@ -62,7 +51,6 @@ export function useAv1Settings(performance: MediaPerformanceProfile | null) {
     effectiveAv1Encoder,
     av1Speed,
     av1Preset,
-    currentAv1Summary,
     av1Crf,
     av1Threads,
     av1TileColumns,

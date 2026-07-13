@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useI18n } from "@/shared/i18n";
 
 const itemStatusLabel: Record<JobProgressItem["status"], string> = {
   queued: "等待",
@@ -28,6 +29,8 @@ export function TaskProgressBoard({
   job: JobSnapshot | null;
   onCancel?: (jobId: string) => void;
 }) {
+  const { t } = useI18n();
+
   if (!job) return null;
 
   const isProcessing = job.status === "queued" || job.status === "running";
@@ -46,14 +49,14 @@ export function TaskProgressBoard({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-medium">
                 <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                正在处理...
+                {t("正在处理")}...
               </div>
               <div className="flex items-center gap-4">
                 <div className="font-mono text-sm text-muted-foreground">{job.progress}%</div>
                 {onCancel ? (
                   <Button variant="ghost" size="sm" onClick={() => onCancel(job.id)} className="h-7 px-2 text-destructive">
                     <X className="h-4 w-4" />
-                    取消
+                    {t("取消")}
                   </Button>
                 ) : null}
               </div>
@@ -68,7 +71,7 @@ export function TaskProgressBoard({
       {isCancelled ? (
         <Card className="border-orange-500/20 shadow-md">
           <CardContent className="space-y-4 p-6">
-            <div className="font-medium text-orange-500">任务已取消</div>
+            <div className="font-medium text-orange-500">{t("任务已取消")}</div>
             {progressItems.length > 0 ? <VideoProgressItemList items={progressItems} /> : null}
           </CardContent>
         </Card>
@@ -77,7 +80,7 @@ export function TaskProgressBoard({
       {isFailed ? (
         <Card className="border-destructive/20 shadow-md">
           <CardContent className="space-y-4 p-6">
-            <div className="font-medium text-destructive">任务失败: {job.error?.message ?? job.message}</div>
+            <div className="font-medium text-destructive">{t("任务失败")}: {job.error?.message ?? job.message}</div>
             {progressItems.length > 0 ? <VideoProgressItemList items={progressItems} /> : null}
           </CardContent>
         </Card>
@@ -89,7 +92,7 @@ export function TaskProgressBoard({
             <CardTitle className="flex items-center justify-between text-green-600 dark:text-green-400">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5" />
-                处理完成
+                {t("处理完成")}
               </div>
               {artifact ? (
                 <Button
@@ -99,13 +102,13 @@ export function TaskProgressBoard({
                   onClick={() => revealItemInDir(artifact)}
                 >
                   <FolderOpen className="h-4 w-4" />
-                  打开产物文件夹
+                  {t("打开产物文件夹")}
                 </Button>
               ) : null}
             </CardTitle>
             <CardDescription className="flex gap-4 pt-2">
               <Badge variant="outline" className="border-green-500/30 bg-background text-green-600">
-                成功
+                {t("成功")}
               </Badge>
               <Badge variant="secondary" className="font-mono">
                 {job.message}
@@ -117,10 +120,10 @@ export function TaskProgressBoard({
             {artifacts.length > 0 ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="font-medium text-foreground">实际产物</div>
-                  <span className="text-xs">共 {artifacts.length} 个文件</span>
+                  <div className="font-medium text-foreground">{t("实际产物")}</div>
+                  <span className="text-xs">{t("共 {count} 个文件", { count: artifacts.length })}</span>
                 </div>
-                <ArtifactPathList paths={artifacts} emptyMessage="暂无实际产物" />
+                <ArtifactPathList paths={artifacts} emptyMessage={t("暂无实际产物")} />
               </div>
             ) : null}
             <div className="flex items-center gap-2">
@@ -135,6 +138,8 @@ export function TaskProgressBoard({
 }
 
 function VideoProgressItemList({ items }: { items: JobProgressItem[] }) {
+  const { t } = useI18n();
+
   return (
     <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border bg-muted/40 p-3">
       {items.map((item) => (
@@ -148,15 +153,15 @@ function VideoProgressItemList({ items }: { items: JobProgressItem[] }) {
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Badge variant={itemStatusVariant(item.status)}>{itemStatusLabel[item.status]}</Badge>
+              <Badge variant={itemStatusVariant(item.status)}>{t(itemStatusLabel[item.status])}</Badge>
               <span className="w-10 text-right font-mono text-xs text-muted-foreground">{item.progress}%</span>
             </div>
           </div>
           <Progress value={item.progress} className="h-1.5" />
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
-            <span>目标 {item.completedTargets}/{item.totalTargets}</span>
-            <span>{frameLabel(item)}</span>
-            {item.artifacts.length > 0 ? <span>产物 {item.artifacts.length}</span> : null}
+            <span>{t("目标")} {item.completedTargets}/{item.totalTargets}</span>
+            <span>{frameLabel(item, t)}</span>
+            {item.artifacts.length > 0 ? <span>{t("产物")} {item.artifacts.length}</span> : null}
           </div>
           {item.error ? <div className="whitespace-pre-wrap text-xs text-destructive">{item.error}</div> : null}
         </div>
@@ -165,12 +170,12 @@ function VideoProgressItemList({ items }: { items: JobProgressItem[] }) {
   );
 }
 
-function frameLabel(item: JobProgressItem) {
+function frameLabel(item: JobProgressItem, t: (text: string, vars?: Record<string, string | number>) => string) {
   if (typeof item.totalFrames === "number" && item.totalFrames > 0) {
-    return `帧 ${item.frame ?? 0}/${item.totalFrames}`;
+    return t("帧 {frame}/{total}", { frame: item.frame ?? 0, total: item.totalFrames });
   }
   if (typeof item.frame === "number") {
-    return `帧 ${item.frame}`;
+    return t("帧 {frame}", { frame: item.frame });
   }
-  return "帧 --";
+  return t("帧 --");
 }

@@ -152,7 +152,7 @@ export default function SettingsPage() {
               name="FFmpeg"
               status={page.mediaRuntime?.ready ? t("已就绪") : page.mediaRuntime ? t("未找到") : t("检测中")}
               ready={Boolean(page.mediaRuntime?.ready)}
-              detail={page.mediaRuntime?.ffmpegVersion ?? page.mediaRuntime?.message ?? "正在检测 FFmpeg"}
+              detail={page.mediaRuntime?.ffmpegVersion ?? page.mediaRuntime?.message ?? t("正在检测 FFmpeg")}
               path={page.mediaRuntime?.path}
               emptyPath={t("未检测到 FFmpeg")}
               sourceName={page.mediaRuntime?.sourceName}
@@ -168,7 +168,7 @@ export default function SettingsPage() {
               name="rclone"
               status={page.mountRuntime?.installed ? t("已安装") : page.mountRuntime ? t("待下载") : t("检测中")}
               ready={Boolean(page.mountRuntime?.installed)}
-              detail={page.mountRuntime?.version ?? (page.mountRuntime ? `期望版本: ${page.mountRuntime.expectedVersion}` : "正在检测 rclone")}
+              detail={page.mountRuntime?.version ?? (page.mountRuntime ? `${t("期望版本")}: ${page.mountRuntime.expectedVersion}` : t("正在检测 rclone"))}
               path={page.mountRuntime?.path}
               emptyPath={t("尚未获取 rclone 路径")}
               sourceName={page.mountRuntime?.sourceName}

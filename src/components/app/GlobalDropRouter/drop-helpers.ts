@@ -22,7 +22,10 @@ export type DropClassification = {
 
 export type DropChoice = {
   classification: DropClassification;
-  summary: string;
+  summary: {
+    text: string;
+    vars?: Record<string, string | number>;
+  };
 };
 
 
@@ -52,11 +55,17 @@ function unique(paths: string[]) {
   return [...new Set(paths)];
 }
 
-export function summarizeDrop(paths: string[]) {
+export function summarizeDrop(paths: string[]): DropChoice["summary"] {
   if (paths.length === 1) {
-    return `“${basename(paths[0])}” 中同时发现图片和视频，请选择要导入的处理页面。`;
+    return {
+      text: "“{name}” 中同时发现图片和视频，请选择要导入的处理页面。",
+      vars: { name: basename(paths[0]) },
+    };
   }
-  return `已拖入 ${paths.length} 个项目，其中同时发现图片和视频，请选择要导入的处理页面。`;
+  return {
+    text: "已拖入 {count} 个项目，其中同时发现图片和视频，请选择要导入的处理页面。",
+    vars: { count: paths.length },
+  };
 }
 
 export function formatError(error: unknown) {

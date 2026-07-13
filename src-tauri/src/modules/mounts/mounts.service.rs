@@ -5,9 +5,9 @@
  */
 
 use std::{
-    collections::HashMap,
     fs::{self, OpenOptions},
     io::{Read, Write},
+    net::TcpListener,
     path::{Path, PathBuf},
     process::{Command, Stdio},
     thread,
@@ -23,11 +23,12 @@ use zip::ZipArchive;
 use crate::{
     modules::{
         mounts::dto::{
-            BackgroundSettings, MountAdvancedOptions, MountDependencyStatus, MountPlatform,
-            MountProfile, MountProfileInput, MountProfileLog, MountProtocol, MountRuntimeStatus,
-            MountStatus, MountTestResult, MountUiContext,
+            BackgroundSettings, ConnectionProbeResult, EffectiveTransport, MountAdvancedOptions,
+            MountDependencyStatus, MountPlatform, MountRuntimeStatus, MountStatus, MountStore,
+            MountUiContext, MountWorkspace, MountWorkspaceInput, ProbeShareEntry, RemoteBinding,
+            RemoteConnection, RemoteConnectionInput, TransportPreference, TransportProbeResult,
         },
-        state::{AppState, MountProcess},
+        state::AppState,
     },
     observability,
     shared::error::{AppError, AppResult},
@@ -42,35 +43,22 @@ use std::os::windows::process::CommandExt;
 mod advanced_options;
 #[path = "service/dependencies.rs"]
 mod dependencies;
-#[path = "service/logs.rs"]
-pub mod logs;
 #[path = "service/normalize.rs"]
 mod normalize;
-#[path = "service/processes.rs"]
-pub mod processes;
-#[path = "service/profile_form.rs"]
-mod profile_form;
-#[path = "service/profiles.rs"]
-pub mod profiles;
-#[path = "service/rclone_config.rs"]
-mod rclone_config;
 #[path = "service/runtime.rs"]
 pub mod runtime;
 #[path = "service/runtime_download.rs"]
 mod runtime_download;
 #[path = "service/storage.rs"]
 mod storage;
-#[path = "service/target.rs"]
-mod target;
-#[path = "service/target_runtime.rs"]
-mod target_runtime;
 
-#[cfg(test)]
-#[path = "service/advanced_options_tests.rs"]
-mod advanced_options_tests;
-#[cfg(test)]
-#[path = "service/log_tests.rs"]
-mod log_tests;
-#[cfg(test)]
-#[path = "service/tests.rs"]
-mod tests;
+#[path = "service/connection_probe.rs"]
+mod connection_probe;
+#[path = "service/ftp_combine.rs"]
+mod ftp_combine;
+#[path = "service/native_smb.rs"]
+mod native_smb;
+#[path = "service/v2_storage.rs"]
+mod v2_storage;
+#[path = "service/workspaces.rs"]
+pub mod workspaces;

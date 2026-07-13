@@ -10,6 +10,7 @@ import { Copy, Download, ExternalLink, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/shared/i18n";
 
 export function RuntimeResourceLine({
   lineRef,
@@ -42,6 +43,8 @@ export function RuntimeResourceLine({
   canOpen: boolean;
   onDownload: () => void;
 }) {
+  const { t } = useI18n();
+
   return (
     <div
       ref={lineRef}
@@ -62,21 +65,21 @@ export function RuntimeResourceLine({
           {path ?? emptyPath}
         </div>
         <div className="break-all text-xs text-muted-foreground">
-          来源：{sourceName && sourceUrl ? `${sourceName} · ${sourceUrl}` : "当前平台未配置下载源"}
+          {t("来源")}：{sourceName && sourceUrl ? `${sourceName} · ${sourceUrl}` : t("当前平台未配置下载源")}
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2 md:justify-end">
         <Button variant="outline" size="sm" disabled={!downloadSupported || downloading} onClick={onDownload}>
           <Download className="h-4 w-4" />
-          {downloading ? "下载中" : "下载/更新"}
+          {downloading ? t("下载中") : t("下载/更新")}
         </Button>
-        <Button variant="outline" size="icon-sm" title="复制路径" disabled={!path} onClick={() => copyResourcePath(path)}>
+        <Button variant="outline" size="icon-sm" title={t("复制路径")} disabled={!path} onClick={() => copyResourcePath(path, t)}>
           <Copy className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon-sm" title="打开所在位置" disabled={!canOpen || !path} onClick={() => openResourcePath(path)}>
+        <Button variant="outline" size="icon-sm" title={t("打开所在位置")} disabled={!canOpen || !path} onClick={() => openResourcePath(path, t)}>
           <FolderOpen className="h-4 w-4" />
         </Button>
-        <Button variant="outline" size="icon-sm" title="打开资源来源" disabled={!sourceUrl} onClick={() => openSourceUrl(sourceUrl)}>
+        <Button variant="outline" size="icon-sm" title={t("打开资源来源")} disabled={!sourceUrl} onClick={() => openSourceUrl(sourceUrl, t)}>
           <ExternalLink className="h-4 w-4" />
         </Button>
       </div>
@@ -84,31 +87,31 @@ export function RuntimeResourceLine({
   );
 }
 
-async function copyResourcePath(path?: string) {
+async function copyResourcePath(path: string | undefined, t: (text: string) => string) {
   if (!path) return;
   try {
     await navigator.clipboard.writeText(path);
-    toast.success("路径已复制");
+    toast.success(t("路径已复制"));
   } catch (error) {
-    toast.error(formatUiError(error) || "复制路径失败");
+    toast.error(formatUiError(error) || t("复制路径失败"));
   }
 }
 
-async function openResourcePath(path?: string) {
+async function openResourcePath(path: string | undefined, t: (text: string) => string) {
   if (!path) return;
   try {
     await revealItemInDir(path);
   } catch (error) {
-    toast.error(formatUiError(error) || "打开所在位置失败");
+    toast.error(formatUiError(error) || t("打开所在位置失败"));
   }
 }
 
-async function openSourceUrl(url?: string) {
+async function openSourceUrl(url: string | undefined, t: (text: string) => string) {
   if (!url) return;
   try {
     await openUrl(url);
   } catch (error) {
-    toast.error(formatUiError(error) || "打开资源来源失败");
+    toast.error(formatUiError(error) || t("打开资源来源失败"));
   }
 }
 

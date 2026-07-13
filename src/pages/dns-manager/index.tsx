@@ -96,11 +96,11 @@ export default function DnsManagerPage() {
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="bg-background px-3 py-1 text-sm">
-            <span className="mr-1 font-bold text-green-500">{enabledCount}</span> 激活
+            <span className="mr-1 font-bold text-green-500">{enabledCount}</span> {t("激活")}
             <span className="mx-2 text-muted-foreground">/</span>
-            <span className="mr-1 text-muted-foreground">{disabledCount}</span> 关闭
+            <span className="mr-1 text-muted-foreground">{disabledCount}</span> {t("关闭")}
           </Badge>
-          <Button onClick={() => page.hostsPath && revealItemInDir(page.hostsPath)} disabled={!page.hostsPath} variant="outline" size="sm" title="在文件管理器中定位 hosts 文件">
+          <Button onClick={() => page.hostsPath && revealItemInDir(page.hostsPath)} disabled={!page.hostsPath} variant="outline" size="sm" title={t("在文件管理器中定位 hosts 文件")}>
             <FolderOpen className="h-4 w-4" /> {t("打开文件")}
           </Button>
           <Button onClick={page.refresh} disabled={page.loading} variant="outline" size="sm">
@@ -133,7 +133,7 @@ export default function DnsManagerPage() {
               </Button>
             ) : null}
             {page.helperStatus.installed ? (
-              <Button onClick={handleHelperUninstall} disabled={page.helperBusy} variant="ghost" size="sm" title="卸载后将恢复为系统授权写入 hosts">
+              <Button onClick={handleHelperUninstall} disabled={page.helperBusy} variant="ghost" size="sm" title={t("卸载后将恢复为系统授权写入 hosts")}>
                 {t("卸载 Helper")}
               </Button>
             ) : null}
@@ -224,7 +224,7 @@ export default function DnsManagerPage() {
                 <Badge variant={entry.enabled ? "default" : "secondary"} className="hidden sm:inline-flex">
                   {entry.enabled ? t("生效中") : t("已停用")}
                 </Badge>
-                <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => page.removeEntry(entry)} title="删除记录">
+                <Button variant="ghost" size="icon-sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => page.removeEntry(entry)} title={t("删除记录")}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

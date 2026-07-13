@@ -2,24 +2,28 @@
 // Do not edit by hand.
 
 import { invoke } from '@tauri-apps/api/core'
-import type { MountDependencyStatus, MountProfile, MountProfileInput, MountProfileLog, MountRuntimeStatus, MountTestResult, MountUiContext } from './types'
+import type { ConnectionProbeResult, MountDependencyStatus, MountRuntimeStatus, MountUiContext, MountWorkspace, MountWorkspaceInput, RemoteConnection, RemoteConnectionInput } from './types'
 
 export type MountsCheckDependenciesRequest = undefined
 export type MountsCheckDependenciesResponse = MountDependencyStatus
 
-export type MountsDeleteProfileRequest = {
+export type MountsCreateWorkspaceRequest = {
+  input: MountWorkspaceInput
+}
+export type MountsCreateWorkspaceResponse = MountWorkspace
+
+export type MountsDeleteConnectionRequest = {
   id: string
 }
-export type MountsDeleteProfileResponse = void
+export type MountsDeleteConnectionResponse = void
+
+export type MountsDeleteWorkspaceRequest = {
+  id: string
+}
+export type MountsDeleteWorkspaceResponse = void
 
 export type MountsDownloadRuntimeRequest = undefined
 export type MountsDownloadRuntimeResponse = MountRuntimeStatus
-
-export type MountsGetProfileLogRequest = {
-  id: string
-  maxLines?: number | undefined
-}
-export type MountsGetProfileLogResponse = MountProfileLog
 
 export type MountsGetRuntimeStatusRequest = undefined
 export type MountsGetRuntimeStatusResponse = MountRuntimeStatus
@@ -27,24 +31,38 @@ export type MountsGetRuntimeStatusResponse = MountRuntimeStatus
 export type MountsGetUiContextRequest = undefined
 export type MountsGetUiContextResponse = MountUiContext
 
-export type MountsListProfilesRequest = undefined
-export type MountsListProfilesResponse = MountProfile[]
+export type MountsListConnectionsRequest = undefined
+export type MountsListConnectionsResponse = RemoteConnection[]
 
-export type MountsSaveProfileRequest = {
-  input: MountProfileInput
+export type MountsListWorkspacesRequest = undefined
+export type MountsListWorkspacesResponse = MountWorkspace[]
+
+export type MountsProbeConnectionRequest = {
+  connectionId: string
 }
-export type MountsSaveProfileResponse = MountProfile
+export type MountsProbeConnectionResponse = ConnectionProbeResult
 
-export type MountsSetProfileEnabledRequest = {
+export type MountsRefreshWorkspaceRequest = {
+  id: string
+  path?: string | undefined
+}
+export type MountsRefreshWorkspaceResponse = MountWorkspace
+
+export type MountsRepairWorkspaceRequest = {
+  id: string
+}
+export type MountsRepairWorkspaceResponse = MountWorkspace
+
+export type MountsSaveConnectionRequest = {
+  input: RemoteConnectionInput
+}
+export type MountsSaveConnectionResponse = RemoteConnection
+
+export type MountsSetWorkspaceEnabledRequest = {
   id: string
   enabled: boolean
 }
-export type MountsSetProfileEnabledResponse = MountProfile
-
-export type MountsTestProfileRequest = {
-  id: string
-}
-export type MountsTestProfileResponse = MountTestResult
+export type MountsSetWorkspaceEnabledResponse = MountWorkspace
 
 export type MountsUnmountAllRequest = undefined
 export type MountsUnmountAllResponse = void
@@ -58,13 +76,29 @@ export type MountsCommandSpec = {
     request: MountsCheckDependenciesRequest
     response: MountsCheckDependenciesResponse
   }
-  'mounts_delete_profile': {
-    request: MountsDeleteProfileRequest
-    response: MountsDeleteProfileResponse
+  'mounts_create_workspace': {
+    request: MountsCreateWorkspaceRequest
+    response: MountsCreateWorkspaceResponse
   }
-  'mounts:delete_profile': {
-    request: MountsDeleteProfileRequest
-    response: MountsDeleteProfileResponse
+  'mounts:create_workspace': {
+    request: MountsCreateWorkspaceRequest
+    response: MountsCreateWorkspaceResponse
+  }
+  'mounts_delete_connection': {
+    request: MountsDeleteConnectionRequest
+    response: MountsDeleteConnectionResponse
+  }
+  'mounts:delete_connection': {
+    request: MountsDeleteConnectionRequest
+    response: MountsDeleteConnectionResponse
+  }
+  'mounts_delete_workspace': {
+    request: MountsDeleteWorkspaceRequest
+    response: MountsDeleteWorkspaceResponse
+  }
+  'mounts:delete_workspace': {
+    request: MountsDeleteWorkspaceRequest
+    response: MountsDeleteWorkspaceResponse
   }
   'mounts_download_runtime': {
     request: MountsDownloadRuntimeRequest
@@ -73,14 +107,6 @@ export type MountsCommandSpec = {
   'mounts:download_runtime': {
     request: MountsDownloadRuntimeRequest
     response: MountsDownloadRuntimeResponse
-  }
-  'mounts_get_profile_log': {
-    request: MountsGetProfileLogRequest
-    response: MountsGetProfileLogResponse
-  }
-  'mounts:get_profile_log': {
-    request: MountsGetProfileLogRequest
-    response: MountsGetProfileLogResponse
   }
   'mounts_get_runtime_status': {
     request: MountsGetRuntimeStatusRequest
@@ -98,37 +124,61 @@ export type MountsCommandSpec = {
     request: MountsGetUiContextRequest
     response: MountsGetUiContextResponse
   }
-  'mounts_list_profiles': {
-    request: MountsListProfilesRequest
-    response: MountsListProfilesResponse
+  'mounts_list_connections': {
+    request: MountsListConnectionsRequest
+    response: MountsListConnectionsResponse
   }
-  'mounts:list_profiles': {
-    request: MountsListProfilesRequest
-    response: MountsListProfilesResponse
+  'mounts:list_connections': {
+    request: MountsListConnectionsRequest
+    response: MountsListConnectionsResponse
   }
-  'mounts_save_profile': {
-    request: MountsSaveProfileRequest
-    response: MountsSaveProfileResponse
+  'mounts_list_workspaces': {
+    request: MountsListWorkspacesRequest
+    response: MountsListWorkspacesResponse
   }
-  'mounts:save_profile': {
-    request: MountsSaveProfileRequest
-    response: MountsSaveProfileResponse
+  'mounts:list_workspaces': {
+    request: MountsListWorkspacesRequest
+    response: MountsListWorkspacesResponse
   }
-  'mounts_set_profile_enabled': {
-    request: MountsSetProfileEnabledRequest
-    response: MountsSetProfileEnabledResponse
+  'mounts_probe_connection': {
+    request: MountsProbeConnectionRequest
+    response: MountsProbeConnectionResponse
   }
-  'mounts:set_profile_enabled': {
-    request: MountsSetProfileEnabledRequest
-    response: MountsSetProfileEnabledResponse
+  'mounts:probe_connection': {
+    request: MountsProbeConnectionRequest
+    response: MountsProbeConnectionResponse
   }
-  'mounts_test_profile': {
-    request: MountsTestProfileRequest
-    response: MountsTestProfileResponse
+  'mounts_refresh_workspace': {
+    request: MountsRefreshWorkspaceRequest
+    response: MountsRefreshWorkspaceResponse
   }
-  'mounts:test_profile': {
-    request: MountsTestProfileRequest
-    response: MountsTestProfileResponse
+  'mounts:refresh_workspace': {
+    request: MountsRefreshWorkspaceRequest
+    response: MountsRefreshWorkspaceResponse
+  }
+  'mounts_repair_workspace': {
+    request: MountsRepairWorkspaceRequest
+    response: MountsRepairWorkspaceResponse
+  }
+  'mounts:repair_workspace': {
+    request: MountsRepairWorkspaceRequest
+    response: MountsRepairWorkspaceResponse
+  }
+  'mounts_save_connection': {
+    request: MountsSaveConnectionRequest
+    response: MountsSaveConnectionResponse
+  }
+  'mounts:save_connection': {
+    request: MountsSaveConnectionRequest
+    response: MountsSaveConnectionResponse
+  }
+  'mounts_set_workspace_enabled': {
+    request: MountsSetWorkspaceEnabledRequest
+    response: MountsSetWorkspaceEnabledResponse
+  }
+  'mounts:set_workspace_enabled': {
+    request: MountsSetWorkspaceEnabledRequest
+    response: MountsSetWorkspaceEnabledResponse
   }
   'mounts_unmount_all': {
     request: MountsUnmountAllRequest
@@ -140,139 +190,62 @@ export type MountsCommandSpec = {
   }
 }
 
-/**
- * 检查 rclone mount 系统依赖。
- *
- * 参数约束：当前只检测 Windows WinFsp 与 macOS macFUSE。
- * 返回含义：返回依赖是否就绪及官方安装地址。
- *
- * @returns Promise<MountsCheckDependenciesResponse>
- */
 export function mountsCheckDependencies(): Promise<MountsCheckDependenciesResponse> {
   return invoke<MountsCheckDependenciesResponse>('mounts_check_dependencies')
 }
 
-/**
- * 删除远程挂载配置。
- *
- * 参数约束：`id` 必须是已存在的 Profile ID。
- * 返回含义：成功后会先卸载运行中的挂载，再删除配置和 rclone remote。
- *
- * @param args MountsDeleteProfileRequest
- * @returns Promise<MountsDeleteProfileResponse>
- */
-export function mountsDeleteProfile(args: MountsDeleteProfileRequest): Promise<MountsDeleteProfileResponse> {
-  return invoke<MountsDeleteProfileResponse>('mounts_delete_profile', args)
+export function mountsCreateWorkspace(args: MountsCreateWorkspaceRequest): Promise<MountsCreateWorkspaceResponse> {
+  return invoke<MountsCreateWorkspaceResponse>('mounts_create_workspace', args)
 }
 
-/**
- * 手动下载 rclone 运行时。
- *
- * 参数约束：下载源由后端按当前平台固定选择，不接收前端 URL。
- * 返回含义：下载、校验并安装后返回新的 rclone 运行时状态。
- *
- * @returns Promise<MountsDownloadRuntimeResponse>
- */
+export function mountsDeleteConnection(args: MountsDeleteConnectionRequest): Promise<MountsDeleteConnectionResponse> {
+  return invoke<MountsDeleteConnectionResponse>('mounts_delete_connection', args)
+}
+
+export function mountsDeleteWorkspace(args: MountsDeleteWorkspaceRequest): Promise<MountsDeleteWorkspaceResponse> {
+  return invoke<MountsDeleteWorkspaceResponse>('mounts_delete_workspace', args)
+}
+
 export function mountsDownloadRuntime(): Promise<MountsDownloadRuntimeResponse> {
   return invoke<MountsDownloadRuntimeResponse>('mounts_download_runtime')
 }
 
-/**
- * 读取指定 profile 的 rclone 日志。
- *
- * 参数约束：`id` 必须是已存在的 Profile ID；日志路径由后端固定计算。
- * 返回含义：返回日志文件路径、元数据和尾部日志内容。
- *
- * @param args MountsGetProfileLogRequest
- * @returns Promise<MountsGetProfileLogResponse>
- */
-export function mountsGetProfileLog(args: MountsGetProfileLogRequest): Promise<MountsGetProfileLogResponse> {
-  return invoke<MountsGetProfileLogResponse>('mounts_get_profile_log', args)
-}
-
-/**
- * 获取 rclone 运行时状态。
- *
- * 参数约束：rclone 路径由后端固定到应用数据目录，不接收前端路径。
- * 返回含义：返回本地 rclone 是否已安装、版本、路径和是否需要下载。
- *
- * @returns Promise<MountsGetRuntimeStatusResponse>
- */
 export function mountsGetRuntimeStatus(): Promise<MountsGetRuntimeStatusResponse> {
   return invoke<MountsGetRuntimeStatusResponse>('mounts_get_runtime_status')
 }
 
-/**
- * 获取远程挂载页面展示上下文。
- *
- * 参数约束：平台与默认挂载目录由后端运行环境决定，不接收前端路径。
- * 返回含义：返回当前平台、默认挂载根目录、示例路径和是否支持 Windows 盘符。
- *
- * @returns Promise<MountsGetUiContextResponse>
- */
 export function mountsGetUiContext(): Promise<MountsGetUiContextResponse> {
   return invoke<MountsGetUiContextResponse>('mounts_get_ui_context')
 }
 
-/**
- * 列出远程挂载配置。
- *
- * 参数约束：配置由后端从应用数据目录读取，不接收前端路径。
- * 返回含义：返回 Profile 列表，并附带当前运行时挂载状态。
- *
- * @returns Promise<MountsListProfilesResponse>
- */
-export function mountsListProfiles(): Promise<MountsListProfilesResponse> {
-  return invoke<MountsListProfilesResponse>('mounts_list_profiles')
+export function mountsListConnections(): Promise<MountsListConnectionsResponse> {
+  return invoke<MountsListConnectionsResponse>('mounts_list_connections')
 }
 
-/**
- * 保存远程挂载配置。
- *
- * 参数约束：`input.protocol` 仅支持 ftp、sftp、webdav；密码留空不覆盖已有凭据。
- * 返回含义：返回保存后的配置；若启用挂载，会返回当前挂载状态。
- *
- * @param args MountsSaveProfileRequest
- * @returns Promise<MountsSaveProfileResponse>
- */
-export function mountsSaveProfile(args: MountsSaveProfileRequest): Promise<MountsSaveProfileResponse> {
-  return invoke<MountsSaveProfileResponse>('mounts_save_profile', args)
+export function mountsListWorkspaces(): Promise<MountsListWorkspacesResponse> {
+  return invoke<MountsListWorkspacesResponse>('mounts_list_workspaces')
 }
 
-/**
- * 启用或停用远程挂载。
- *
- * 参数约束：启用前要求 rclone runtime 和系统挂载依赖就绪。
- * 返回含义：返回更新后的 Profile 及当前挂载状态。
- *
- * @param args MountsSetProfileEnabledRequest
- * @returns Promise<MountsSetProfileEnabledResponse>
- */
-export function mountsSetProfileEnabled(args: MountsSetProfileEnabledRequest): Promise<MountsSetProfileEnabledResponse> {
-  return invoke<MountsSetProfileEnabledResponse>('mounts_set_profile_enabled', args)
+export function mountsProbeConnection(args: MountsProbeConnectionRequest): Promise<MountsProbeConnectionResponse> {
+  return invoke<MountsProbeConnectionResponse>('mounts_probe_connection', args)
 }
 
-/**
- * 测试远程挂载连接。
- *
- * 参数约束：`id` 必须是已存在的 Profile ID，仅测试远程可访问性。
- * 返回含义：返回测试是否成功和 rclone 输出摘要。
- *
- * @param args MountsTestProfileRequest
- * @returns Promise<MountsTestProfileResponse>
- */
-export function mountsTestProfile(args: MountsTestProfileRequest): Promise<MountsTestProfileResponse> {
-  return invoke<MountsTestProfileResponse>('mounts_test_profile', args)
+export function mountsRefreshWorkspace(args: MountsRefreshWorkspaceRequest): Promise<MountsRefreshWorkspaceResponse> {
+  return invoke<MountsRefreshWorkspaceResponse>('mounts_refresh_workspace', args)
 }
 
-/**
- * 卸载全部远程挂载。
- *
- * 参数约束：只影响本应用启动并追踪的 rclone mount 进程。
- * 返回含义：成功表示所有已知挂载进程已请求退出，配置启用状态已关闭。
- *
- * @returns Promise<MountsUnmountAllResponse>
- */
+export function mountsRepairWorkspace(args: MountsRepairWorkspaceRequest): Promise<MountsRepairWorkspaceResponse> {
+  return invoke<MountsRepairWorkspaceResponse>('mounts_repair_workspace', args)
+}
+
+export function mountsSaveConnection(args: MountsSaveConnectionRequest): Promise<MountsSaveConnectionResponse> {
+  return invoke<MountsSaveConnectionResponse>('mounts_save_connection', args)
+}
+
+export function mountsSetWorkspaceEnabled(args: MountsSetWorkspaceEnabledRequest): Promise<MountsSetWorkspaceEnabledResponse> {
+  return invoke<MountsSetWorkspaceEnabledResponse>('mounts_set_workspace_enabled', args)
+}
+
 export function mountsUnmountAll(): Promise<MountsUnmountAllResponse> {
   return invoke<MountsUnmountAllResponse>('mounts_unmount_all')
 }

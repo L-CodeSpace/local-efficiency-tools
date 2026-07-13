@@ -13,9 +13,10 @@ use super::{
     dependencies::current_platform,
     runtime_download::{current_asset, download_rclone, get_rclone_version},
     storage::{
-        app_rclone_dir, default_drive_letter, default_mount_dir_name, default_mount_root,
-        profiles_path, rclone_binary_path, rclone_config_path,
+        app_rclone_dir, default_drive_letter, default_drive_letters, default_mount_dir_name,
+        default_mount_root, rclone_binary_path,
     },
+    v2_storage::{mount_store_path, v2_rclone_config_path},
 };
 
 pub(super) const RCLONE_VERSION: &str = "v1.74.3";
@@ -128,14 +129,16 @@ pub fn ui_context(app: &AppHandle) -> AppResult<MountUiContext> {
     let default_example = default_root.join(default_mount_dir_name("nas"));
     let default_drive_letter = default_drive_letter(app);
     let config_dir = app_rclone_dir(app)?;
-    let profile_config_path = profiles_path(app)?;
-    let rclone_config_path = rclone_config_path(app)?;
+    let profile_config_path = mount_store_path(app)?;
+    let rclone_config_path = v2_rclone_config_path(app)?;
 
     Ok(MountUiContext {
         platform: current_platform(),
         default_mount_root: default_root.to_string_lossy().to_string(),
         default_mount_example: default_example.to_string_lossy().to_string(),
         default_drive_letter,
+        default_drive_letters: Some(default_drive_letters(app, 16))
+            .filter(|letters| !letters.is_empty()),
         config_dir: config_dir.to_string_lossy().to_string(),
         profile_config_path: profile_config_path.to_string_lossy().to_string(),
         rclone_config_path: rclone_config_path.to_string_lossy().to_string(),

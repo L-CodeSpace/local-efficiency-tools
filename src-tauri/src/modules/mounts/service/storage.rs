@@ -1,49 +1,11 @@
 /*
- * 核心职责：读写挂载持久化文件。
- * 业务痛点：配置、日志和缓存路径必须集中维护。
- * 能力边界：只处理本应用数据目录下的文件路径和 JSON 存储。
+ * 核心职责：集中维护远程挂载运行时、配置、缓存和默认目标路径。
+ * 业务痛点：平台路径和盘符分配必须只有一个可信来源。
+ * 能力边界：只处理应用数据目录和轻量 JSON 读取，不管理挂载进程。
  */
 
 use super::normalize::sanitize_path_part;
 use super::*;
-
-pub(super) fn load_profiles(app: &AppHandle) -> AppResult<Vec<MountProfile>> {
-    let path = profiles_path(app)?;
-    if !path.exists() {
-        return Ok(Vec::new());
-    }
-    let content = fs::read_to_string(path)?;
-    serde_json::from_str(&content).map_err(|error| {
-        AppError::new("mount_profiles_parse_failed", "解析 rclone 配置失败")
-            .with_detail(error.to_string())
-    })
-}
-
-pub(super) fn save_profiles(app: &AppHandle, profiles: &[MountProfile]) -> AppResult<()> {
-    let path = profiles_path(app)?;
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    let content = serde_json::to_string_pretty(profiles).map_err(|error| {
-        AppError::new("mount_profiles_serialize_failed", "序列化 rclone 配置失败")
-            .with_detail(error.to_string())
-    })?;
-    fs::write(path, content)?;
-    Ok(())
-}
-
-pub(super) fn replace_profile(app: &AppHandle, profile: MountProfile) -> AppResult<()> {
-    let mut profiles = load_profiles(app)?;
-    if let Some(index) = profiles
-        .iter()
-        .position(|existing| existing.id == profile.id)
-    {
-        profiles[index] = profile;
-    } else {
-        profiles.push(profile);
-    }
-    save_profiles(app, &profiles)
-}
 
 pub(super) fn read_background_settings(app: &AppHandle) -> AppResult<BackgroundSettings> {
     let path = background_settings_path(app)?;
@@ -76,26 +38,8 @@ pub(super) fn rclone_binary_path(app: &AppHandle) -> AppResult<PathBuf> {
     Ok(rclone_runtime_dir(app)?.join(name))
 }
 
-pub(super) fn rclone_config_path(app: &AppHandle) -> AppResult<PathBuf> {
-    Ok(app_rclone_dir(app)?.join("rclone.conf"))
-}
-
-pub(super) fn profiles_path(app: &AppHandle) -> AppResult<PathBuf> {
-    Ok(app_rclone_dir(app)?.join("profiles.json"))
-}
-
 pub(super) fn background_settings_path(app: &AppHandle) -> AppResult<PathBuf> {
     Ok(app_rclone_dir(app)?.join("background.json"))
-}
-
-pub(super) fn profile_cache_dir(app: &AppHandle, id: &str) -> AppResult<PathBuf> {
-    Ok(app_rclone_dir(app)?.join("cache").join(id))
-}
-
-pub(super) fn profile_log_path(app: &AppHandle, id: &str) -> AppResult<PathBuf> {
-    Ok(app_rclone_dir(app)?
-        .join("logs")
-        .join(format!("{}.log", id)))
 }
 
 pub(super) fn mounts_dir(app: &AppHandle) -> AppResult<PathBuf> {
@@ -104,33 +48,60 @@ pub(super) fn mounts_dir(app: &AppHandle) -> AppResult<PathBuf> {
     Ok(dir)
 }
 
-pub(super) fn default_mount_target(app: &AppHandle, name: &str) -> AppResult<PathBuf> {
-    let (root, _) = default_mount_root(app)?;
-    Ok(root.join(default_mount_dir_name(name)))
-}
-
 pub(super) fn default_drive_letter(app: &AppHandle) -> Option<String> {
-    #[cfg(target_os = "windows")]
-    {
-        let profiles = load_profiles(app).unwrap_or_default();
-        let used = profiles
-            .iter()
-            .filter_map(|profile| profile.drive_letter.as_deref())
-            .map(ToOwned::to_owned)
-            .collect::<Vec<_>>();
-        select_default_drive_letter(&used, |letter| {
-            PathBuf::from(format!("{}:\\", letter)).exists()
-        })
-    }
+    default_drive_letters(app, 1).into_iter().next()
+}
 
-    #[cfg(not(target_os = "windows"))]
+pub(super) fn default_drive_letters(app: &AppHandle, count: usize) -> Vec<String> {
+    #[cfg(windows)]
     {
-        let _ = app;
-        None
+        let used = read_used_drive_letters(app);
+        let mut reserved = used;
+        let mut result = Vec::new();
+        while result.len() < count {
+            let Some(letter) = select_default_drive_letter(&reserved, |letter| {
+                PathBuf::from(format!("{}:\\", letter)).exists()
+            }) else {
+                break;
+            };
+            reserved.push(letter.clone());
+            result.push(letter);
+        }
+        result
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (app, count);
+        Vec::new()
     }
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(windows)]
+fn read_used_drive_letters(app: &AppHandle) -> Vec<String> {
+    let path = match app_rclone_dir(app) {
+        Ok(path) => path.join("mounts-v2.json"),
+        Err(_) => return Vec::new(),
+    };
+    let Ok(content) = fs::read_to_string(path) else {
+        return Vec::new();
+    };
+    let Ok(store) = serde_json::from_str::<MountStore>(&content) else {
+        return Vec::new();
+    };
+    store
+        .workspaces
+        .iter()
+        .filter_map(|workspace| workspace.drive_letter.clone())
+        .chain(store.workspaces.iter().flat_map(|workspace| {
+            workspace
+                .bindings
+                .iter()
+                .filter_map(|binding| binding.drive_letter.clone())
+        }))
+        .collect()
+}
+
+#[cfg(windows)]
 pub(super) fn select_default_drive_letter(
     used_letters: &[String],
     is_occupied: impl Fn(char) -> bool,
@@ -141,10 +112,8 @@ pub(super) fn select_default_drive_letter(
             .iter()
             .filter_map(|value| value.chars().next())
             .any(|value| value.eq_ignore_ascii_case(&letter))
+            || is_occupied(letter)
         {
-            continue;
-        }
-        if is_occupied(letter) {
             continue;
         }
         return Some(format!("{}:", letter));

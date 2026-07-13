@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/shared/i18n";
 import { useJobFeed } from "@/shared/state/useJobFeed";
 
 const statusLabel: Record<JobSnapshot["status"], string> = {
@@ -22,18 +23,19 @@ function statusVariant(status: JobSnapshot["status"]) {
 }
 
 export function JobFeed({ compact = false }: { compact?: boolean }) {
+  const { t } = useI18n();
   const { jobs, loading, cancelJob } = useJobFeed();
   const visibleJobs = compact ? jobs.slice(0, 4) : jobs;
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">任务状态</CardTitle>
+        <CardTitle className="text-base">{t("任务状态")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {loading ? <div className="text-sm text-muted-foreground">正在读取任务快照...</div> : null}
+        {loading ? <div className="text-sm text-muted-foreground">{t("正在读取任务快照")}...</div> : null}
         {!loading && visibleJobs.length === 0 ? (
-          <div className="text-sm text-muted-foreground">暂无任务。</div>
+          <div className="text-sm text-muted-foreground">{t("暂无任务。")}</div>
         ) : null}
         {visibleJobs.map((job) => {
           const canCancel = job.status === "queued" || job.status === "running";
@@ -45,12 +47,12 @@ export function JobFeed({ compact = false }: { compact?: boolean }) {
                   <div className="mt-1 truncate text-xs text-muted-foreground">{job.message}</div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <Badge variant={statusVariant(job.status)}>{statusLabel[job.status]}</Badge>
+                  <Badge variant={statusVariant(job.status)}>{t(statusLabel[job.status])}</Badge>
                   {canCancel ? (
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      title="取消任务"
+                      title={t("取消任务")}
                       onClick={() => cancelJob(job.id)}
                     >
                       <X className="h-3 w-3" />

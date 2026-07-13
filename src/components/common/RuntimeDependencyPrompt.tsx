@@ -2,6 +2,7 @@ import { AlertTriangle, RefreshCw, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/shared/i18n";
 
 type RuntimeKind = "ffmpeg" | "rclone";
 
@@ -30,6 +31,8 @@ export function RuntimeDependencyPrompt({
   refreshing?: boolean;
   onRefresh: () => void | Promise<void>;
 }) {
+  const { t } = useI18n();
+
   if (loading || ready) {
     return null;
   }
@@ -43,22 +46,22 @@ export function RuntimeDependencyPrompt({
     >
       <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300" />
       <div className="min-w-0 flex-1">
-        <div className="font-semibold">需要安装 {dependencyName} 运行时</div>
+        <div className="font-semibold">{t("需要安装 {name} 运行时", { name: dependencyName })}</div>
         <div className="mt-1 break-words text-amber-900/80 dark:text-amber-100/80">{message}</div>
         <div className="mt-1 break-all text-xs text-amber-900/70 dark:text-amber-100/70">
-          来源：{sourceName && sourceUrl ? `${sourceName} · ${sourceUrl}` : "当前平台未配置下载源"}
+          {t("来源")}：{sourceName && sourceUrl ? `${sourceName} · ${sourceUrl}` : t("当前平台未配置下载源")}
         </div>
       </div>
       <div className="flex shrink-0 flex-wrap gap-2">
         <Button variant="outline" size="sm" className="bg-background" asChild>
           <Link to={`/settings?runtime=${runtime}`}>
             <Settings className="h-4 w-4" />
-            {downloadSupported ? "前往设置下载" : "前往设置查看"}
+            {downloadSupported ? t("前往设置下载") : t("前往设置查看")}
           </Link>
         </Button>
         <Button variant="outline" size="sm" className="bg-background" onClick={onRefresh} disabled={refreshing}>
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-          重新检测
+          {t("重新检测")}
         </Button>
       </div>
     </div>

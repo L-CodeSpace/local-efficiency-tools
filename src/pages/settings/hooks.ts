@@ -16,8 +16,10 @@ import {
 } from "@/api_tauri";
 import { logError, logSuccess } from "@/shared/state/logStore";
 import { formatError } from "@/shared/utils/error";
+import { useI18n } from "@/shared/i18n";
 
 export function useSettingsPage() {
+  const { t } = useI18n();
   const [overview, setOverview] = useState<SystemOverview | null>(null);
   const [hardware, setHardware] = useState<HardwareInfo | null>(null);
   const [mediaRuntime, setMediaRuntime] = useState<MediaRuntimeStatus | null>(null);
@@ -58,7 +60,7 @@ export function useSettingsPage() {
     try {
       const next = await appSettingsSetBackground({ enabled });
       setBackgroundEnabled(next.enabled);
-      toast.success(next.enabled ? "已开启后台运行" : "已关闭后台运行");
+      toast.success(next.enabled ? t("已开启后台运行") : t("已关闭后台运行"));
     } catch (err) {
       setBackgroundEnabled(previous);
       const message = formatError(err);
@@ -77,12 +79,12 @@ export function useSettingsPage() {
         const next = await mediaDownloadRuntime();
         setMediaRuntime(next);
         logSuccess("FFmpeg 运行时已下载");
-        toast.success("FFmpeg 运行时已下载");
+        toast.success(t("FFmpeg 运行时已下载"));
       } else {
         const next = await mountsDownloadRuntime();
         setMountRuntime(next);
         logSuccess("rclone 运行时已下载");
-        toast.success("rclone 运行时已下载");
+        toast.success(t("rclone 运行时已下载"));
       }
     } catch (err) {
       const message = formatError(err);
