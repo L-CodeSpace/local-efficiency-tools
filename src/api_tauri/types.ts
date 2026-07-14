@@ -410,6 +410,7 @@ export type RemoteConnection = {
   tlsMode?: string | undefined
   noCheckCertificate: boolean
   transportPreference: TransportPreference
+  windowsAuthMode: WindowsSmbAuthMode
   createdAt: number
   updatedAt: number
 }
@@ -426,6 +427,7 @@ export type RemoteConnectionInput = {
   tlsMode?: string | undefined
   noCheckCertificate?: boolean | undefined
   transportPreference?: TransportPreference | undefined
+  windowsAuthMode?: WindowsSmbAuthMode | undefined
 }
 
 export type RenameExecuteRequest = {
@@ -461,6 +463,18 @@ export type RenamePreviewRequest = {
   collisionStartIndex?: number | undefined
 }
 
+export type SmbHostCleanupResult = {
+  host: string
+  removedCount: number
+  disabledWorkspaceCount: number
+  removedMappings: SmbMappingCleanupItem[]
+}
+
+export type SmbMappingCleanupItem = {
+  localName?: string | undefined
+  remoteName: string
+}
+
 export type SystemOverview = {
   appDataDir: string
   currentDir: string
@@ -481,4 +495,6 @@ export type TransportProbeResult = {
 export type VideoAv1Encoder = 'auto' | 'av1Nvenc' | 'libSvtAv1' | 'libAomAv1'
 
 export type VideoTarget = 'animatedWebp' | 'av1WithAudio' | 'av1VideoOnly' | 'audioMp3'
+
+export type WindowsSmbAuthMode = 'auto' | 'plain' | 'domain'
 

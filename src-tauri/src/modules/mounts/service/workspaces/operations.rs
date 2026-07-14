@@ -12,8 +12,8 @@ use super::super::{
 };
 use super::{
     lifecycle::{
-        hydrate_workspace_status, prune_exited_sessions, start_workspace_session,
-        stop_workspace_session,
+        forget_native_smb_sessions, hydrate_workspace_status, prune_exited_sessions,
+        start_workspace_session, stop_workspace_session,
     },
     operation_lock,
     validation::{
@@ -212,6 +212,72 @@ pub fn repair_workspace(app: &AppHandle, state: &AppState, id: &str) -> AppResul
     let mut result = workspace;
     hydrate_workspace_status(state, &mut result);
     Ok(result)
+}
+
+pub fn cleanup_smb_host(
+    app: &AppHandle,
+    state: &AppState,
+    connection_id: &str,
+) -> AppResult<SmbHostCleanupResult> {
+    if !cfg!(windows) {
+        return Err(AppError::new(
+            "mount_smb_cleanup_unsupported",
+            "当前平台不支持清理 Windows SMB 映射",
+        ));
+    }
+    let _operation = operation_lock()?;
+    let mut store = load_mount_store(app)?;
+    let host = connection_by_id(&store, connection_id)?.host.clone();
+    let connection_ids = store
+        .connections
+        .iter()
+        .filter(|connection| same_host(&connection.host, &host))
+        .map(|connection| connection.id.clone())
+        .collect::<Vec<_>>();
+    let workspace_ids = store
+        .workspaces
+        .iter()
+        .filter(|workspace| {
+            connection_ids.contains(&workspace.connection_id)
+                && workspace.effective_transport == Some(EffectiveTransport::NativeSmb)
+        })
+        .map(|workspace| workspace.id.clone())
+        .collect::<Vec<_>>();
+    let now = super::super::normalize::now_millis();
+    let mut disabled_workspace_count = 0u32;
+    for workspace in &mut store.workspaces {
+        if workspace_ids.contains(&workspace.id) {
+            disabled_workspace_count += u32::from(workspace.enabled);
+            workspace.enabled = false;
+            workspace.mounted = false;
+            workspace.status = MountStatus::Disabled;
+            workspace.error = None;
+            workspace.updated_at = now;
+        }
+    }
+    save_mount_store(app, &store)?;
+    forget_native_smb_sessions(state, &workspace_ids)?;
+    let removed_mappings = native_smb::cleanup_host(&host)?;
+    observability::emit_info(
+        app,
+        format!(
+            "已清理主机 {} 的 Windows SMB 映射：{} 个",
+            host,
+            removed_mappings.len()
+        ),
+    );
+    Ok(SmbHostCleanupResult {
+        host,
+        removed_count: removed_mappings.len() as u32,
+        disabled_workspace_count,
+        removed_mappings,
+    })
+}
+
+fn same_host(left: &str, right: &str) -> bool {
+    left.trim()
+        .trim_end_matches('.')
+        .eq_ignore_ascii_case(right.trim().trim_end_matches('.'))
 }
 
 fn replace_workspace(app: &AppHandle, workspace: &MountWorkspace) -> AppResult<()> {

@@ -4,7 +4,12 @@
  */
 
 import type { Dispatch, SetStateAction } from "react";
-import type { EffectiveTransport, ProbeShareEntry, TransportPreference } from "@/api_tauri";
+import type {
+  EffectiveTransport,
+  ProbeShareEntry,
+  TransportPreference,
+  WindowsSmbAuthMode,
+} from "@/api_tauri";
 
 export type ConnectionForm = {
   id?: string;
@@ -19,6 +24,7 @@ export type ConnectionForm = {
   tlsMode: "none" | "explicit" | "implicit";
   noCheckCertificate: boolean;
   transportPreference: TransportPreference;
+  windowsAuthMode: WindowsSmbAuthMode;
 };
 
 export type ProbeWorkspaceRow = ProbeShareEntry & {
@@ -48,6 +54,7 @@ export const EMPTY_CONNECTION: ConnectionForm = {
   tlsMode: "none",
   noCheckCertificate: false,
   transportPreference: "auto",
+  windowsAuthMode: "auto",
 };
 
 export function joinPath(root: string, name: string): string {

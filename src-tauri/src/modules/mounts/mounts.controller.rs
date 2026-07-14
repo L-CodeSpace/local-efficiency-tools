@@ -13,6 +13,7 @@ use crate::{
             dto::{
                 ConnectionProbeResult, MountDependencyStatus, MountRuntimeStatus, MountUiContext,
                 MountWorkspace, MountWorkspaceInput, RemoteConnection, RemoteConnectionInput,
+                SmbHostCleanupResult,
             },
             service::{runtime, workspaces},
         },
@@ -159,6 +160,20 @@ pub async fn mounts_repair_workspace(
     tauri::async_runtime::spawn_blocking(move || workspaces::repair_workspace(&app, &state, &id))
         .await
         .map_err(join_error)?
+}
+
+#[tauri::command]
+pub async fn mounts_cleanup_smb_host(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    connection_id: String,
+) -> Result<SmbHostCleanupResult, AppError> {
+    let state = state.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        workspaces::cleanup_smb_host(&app, &state, &connection_id)
+    })
+    .await
+    .map_err(join_error)?
 }
 
 #[tauri::command]

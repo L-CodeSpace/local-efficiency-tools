@@ -2,10 +2,15 @@
 // Do not edit by hand.
 
 import { invoke } from '@tauri-apps/api/core'
-import type { ConnectionProbeResult, MountDependencyStatus, MountRuntimeStatus, MountUiContext, MountWorkspace, MountWorkspaceInput, RemoteConnection, RemoteConnectionInput } from './types'
+import type { ConnectionProbeResult, MountDependencyStatus, MountRuntimeStatus, MountUiContext, MountWorkspace, MountWorkspaceInput, RemoteConnection, RemoteConnectionInput, SmbHostCleanupResult } from './types'
 
 export type MountsCheckDependenciesRequest = undefined
 export type MountsCheckDependenciesResponse = MountDependencyStatus
+
+export type MountsCleanupSmbHostRequest = {
+  connectionId: string
+}
+export type MountsCleanupSmbHostResponse = SmbHostCleanupResult
 
 export type MountsCreateWorkspaceRequest = {
   input: MountWorkspaceInput
@@ -75,6 +80,14 @@ export type MountsCommandSpec = {
   'mounts:check_dependencies': {
     request: MountsCheckDependenciesRequest
     response: MountsCheckDependenciesResponse
+  }
+  'mounts_cleanup_smb_host': {
+    request: MountsCleanupSmbHostRequest
+    response: MountsCleanupSmbHostResponse
+  }
+  'mounts:cleanup_smb_host': {
+    request: MountsCleanupSmbHostRequest
+    response: MountsCleanupSmbHostResponse
   }
   'mounts_create_workspace': {
     request: MountsCreateWorkspaceRequest
@@ -192,6 +205,10 @@ export type MountsCommandSpec = {
 
 export function mountsCheckDependencies(): Promise<MountsCheckDependenciesResponse> {
   return invoke<MountsCheckDependenciesResponse>('mounts_check_dependencies')
+}
+
+export function mountsCleanupSmbHost(args: MountsCleanupSmbHostRequest): Promise<MountsCleanupSmbHostResponse> {
+  return invoke<MountsCleanupSmbHostResponse>('mounts_cleanup_smb_host', args)
 }
 
 export function mountsCreateWorkspace(args: MountsCreateWorkspaceRequest): Promise<MountsCreateWorkspaceResponse> {

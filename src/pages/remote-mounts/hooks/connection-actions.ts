@@ -6,6 +6,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { toast } from "sonner";
 import {
+  mountsCleanupSmbHost,
   mountsDeleteConnection,
   mountsSaveConnection,
   type RemoteConnection,
@@ -54,6 +55,7 @@ export function createConnectionActions(context: Context) {
       tlsMode: (connection.tlsMode as ConnectionForm["tlsMode"] | undefined) ?? "none",
       noCheckCertificate: connection.noCheckCertificate,
       transportPreference: connection.transportPreference,
+      windowsAuthMode: connection.windowsAuthMode,
     });
     setConnectionDialogOpen(true);
   };
@@ -90,6 +92,7 @@ export function createConnectionActions(context: Context) {
           tlsMode: connectionForm.tlsMode === "none" ? undefined : connectionForm.tlsMode,
           noCheckCertificate: connectionForm.noCheckCertificate,
           transportPreference: connectionForm.transportPreference,
+          windowsAuthMode: connectionForm.windowsAuthMode,
         },
       });
       setConnectionDialogOpen(false);
@@ -121,5 +124,32 @@ export function createConnectionActions(context: Context) {
     }
   };
 
-  return { openCreateConnection, openEditConnection, updateConnectionForm, saveConnection, deleteConnection };
+  const cleanupSmbHost = async (connection: RemoteConnection) => {
+    if (!window.confirm(t(
+      "将断开当前 Windows 用户中所有来自 {host} 的 SMB 映射，包括非本应用创建的网络盘，并停用相关工作区。是否继续？",
+      { host: connection.host },
+    ))) return;
+    setBusyId(`cleanup-smb:${connection.id}`);
+    try {
+      const result = await mountsCleanupSmbHost({ connectionId: connection.id });
+      toast.success(t("已清理 {count} 个来自 {host} 的 SMB 映射", {
+        count: result.removedCount,
+        host: result.host,
+      }));
+    } catch (cause) {
+      reportError(cause);
+    } finally {
+      await refresh();
+      setBusyId(null);
+    }
+  };
+
+  return {
+    openCreateConnection,
+    openEditConnection,
+    updateConnectionForm,
+    saveConnection,
+    deleteConnection,
+    cleanupSmbHost,
+  };
 }

@@ -63,6 +63,15 @@ pub enum TransportPreference {
     Ftp,
 }
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum WindowsSmbAuthMode {
+    #[default]
+    Auto,
+    Plain,
+    Domain,
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum EffectiveTransport {
@@ -135,6 +144,8 @@ pub struct RemoteConnection {
     pub no_check_certificate: bool,
     #[serde(default)]
     pub transport_preference: TransportPreference,
+    #[serde(default)]
+    pub windows_auth_mode: WindowsSmbAuthMode,
     pub created_at: u64,
     pub updated_at: u64,
 }
@@ -153,6 +164,23 @@ pub struct RemoteConnectionInput {
     pub tls_mode: Option<String>,
     pub no_check_certificate: Option<bool>,
     pub transport_preference: Option<TransportPreference>,
+    pub windows_auth_mode: Option<WindowsSmbAuthMode>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SmbMappingCleanupItem {
+    pub local_name: Option<String>,
+    pub remote_name: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SmbHostCleanupResult {
+    pub host: String,
+    pub removed_count: u32,
+    pub disabled_workspace_count: u32,
+    pub removed_mappings: Vec<SmbMappingCleanupItem>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -47,6 +47,7 @@ pub fn save_connection(
         tls_mode: normalize_tls_mode(input.tls_mode),
         no_check_certificate: input.no_check_certificate.unwrap_or(false),
         transport_preference: input.transport_preference.unwrap_or_default(),
+        windows_auth_mode: input.windows_auth_mode.unwrap_or_default(),
         created_at: existing.as_ref().map(|item| item.created_at).unwrap_or(now),
         updated_at: now,
     };

@@ -114,6 +114,17 @@ function ConnectionList({ page }: { page: ReturnType<typeof useRemoteMountsPage>
                 <div className="mt-1 truncate font-mono text-xs text-muted-foreground">{connection.username}@{connection.host} · SMB {connection.smbPort} · FTP {connection.ftpPort}</div>
               </div>
               <div className="flex gap-1">
+                {page.uiContext?.platform === "windows" ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => page.cleanupSmbHost(connection)}
+                    disabled={page.busyId === `cleanup-smb:${connection.id}`}
+                    title={t("清理该主机的全部 SMB 映射")}
+                  >
+                    <Unplug className="h-4 w-4" />{t("清理 SMB")}
+                  </Button>
+                ) : null}
                 <Button variant="ghost" size="icon-sm" onClick={() => page.openEditConnection(connection)} title={t("编辑连接")}><Edit className="h-4 w-4" /></Button>
                 <Button variant="ghost" size="icon-sm" onClick={() => page.deleteConnection(connection)} disabled={page.busyId === `connection:${connection.id}`} title={t("删除连接")}><Trash2 className="h-4 w-4" /></Button>
               </div>

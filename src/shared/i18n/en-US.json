@@ -552,5 +552,14 @@
   "SMB 使用系统原生共享，FTP 使用已探测目录构建单一聚合入口。": "SMB uses native system shares. FTP builds one aggregate entry from probed directories.",
   "SMB 优先": "SMB first",
   "原生 SMB": "Native SMB",
-  "FTP 聚合": "FTP aggregate"
+  "FTP 聚合": "FTP aggregate",
+  "Windows SMB 登录方式": "Windows SMB sign-in mode",
+  "自动协商（推荐）": "Automatic negotiation (recommended)",
+  "仅用户名": "Username only",
+  "域\\用户名": "Domain\\username",
+  "WORKGROUP 是工作组名称；NAS 本地账户通常优先使用仅用户名。": "WORKGROUP is a workgroup name; NAS local accounts usually work best with username only.",
+  "清理 SMB": "Clean SMB",
+  "清理该主机的全部 SMB 映射": "Clean all SMB mappings for this host",
+  "将断开当前 Windows 用户中所有来自 {host} 的 SMB 映射，包括非本应用创建的网络盘，并停用相关工作区。是否继续？": "This will disconnect every SMB mapping from {host} in the current Windows user session, including network drives created outside this app, and disable related workspaces. Continue?",
+  "已清理 {count} 个来自 {host} 的 SMB 映射": "Cleaned {count} SMB mappings from {host}"
 }

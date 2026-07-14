@@ -55,6 +55,22 @@ pub(super) fn stop_workspace_session(app: &AppHandle, state: &AppState, id: &str
     Ok(())
 }
 
+pub(super) fn forget_native_smb_sessions(
+    state: &AppState,
+    workspace_ids: &[String],
+) -> AppResult<u32> {
+    let mut sessions = state
+        .mount_sessions
+        .lock()
+        .map_err(|_| AppError::new("mount_session_lock_failed", "挂载会话状态锁已损坏"))?;
+    let before = sessions.len();
+    sessions.retain(|id, session| {
+        !workspace_ids.iter().any(|workspace_id| workspace_id == id)
+            || !matches!(session, MountSession::NativeSmb { .. })
+    });
+    Ok(before.saturating_sub(sessions.len()) as u32)
+}
+
 pub(super) fn hydrate_workspace_status(state: &AppState, workspace: &mut MountWorkspace) {
     workspace.mounted = state
         .mount_sessions

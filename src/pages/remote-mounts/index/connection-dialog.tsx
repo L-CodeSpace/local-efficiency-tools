@@ -52,6 +52,21 @@ export function ConnectionDialog({ page }: { page: Page }) {
           <Field label={t("域（可选）")}>
             <Input value={form.domain} onChange={(event) => page.updateConnectionForm({ domain: event.target.value })} placeholder="WORKGROUP" />
           </Field>
+          {page.uiContext?.platform === "windows" ? (
+            <Field label={t("Windows SMB 登录方式")}>
+              <Select value={form.windowsAuthMode} onValueChange={(value) => page.updateConnectionForm({ windowsAuthMode: value as typeof form.windowsAuthMode })}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">{t("自动协商（推荐）")}</SelectItem>
+                  <SelectItem value="plain">{t("仅用户名")}</SelectItem>
+                  <SelectItem value="domain">{t("域\\用户名")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("WORKGROUP 是工作组名称；NAS 本地账户通常优先使用仅用户名。")}
+              </p>
+            </Field>
+          ) : null}
           <Field label={t("用户名")}>
             <Input value={form.username} onChange={(event) => page.updateConnectionForm({ username: event.target.value })} autoComplete="username" />
           </Field>

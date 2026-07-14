@@ -187,6 +187,7 @@ pub(super) fn workspace_remote_name(id: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::modules::mounts::dto::WindowsSmbAuthMode;
 
     #[test]
     fn combine_supports_unicode_spaces_and_duplicate_aliases() {
@@ -202,6 +203,7 @@ mod tests {
             tls_mode: None,
             no_check_certificate: false,
             transport_preference: TransportPreference::Auto,
+            windows_auth_mode: WindowsSmbAuthMode::Auto,
             created_at: 0,
             updated_at: 0,
         };

@@ -55,6 +55,7 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Syn
         mounts_set_workspace_enabled,
         mounts_refresh_workspace,
         mounts_repair_workspace,
+        mounts_cleanup_smb_host,
         mounts_unmount_all,
         app_settings_get_background,
         app_settings_set_background,

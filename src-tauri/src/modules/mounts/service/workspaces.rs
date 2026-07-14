@@ -22,8 +22,8 @@ pub use connections::{
 };
 pub use lifecycle::{restore_enabled_workspaces, stop_all_workspaces, unmount_all_workspaces};
 pub use operations::{
-    create_workspace, delete_workspace, list_workspaces, refresh_workspace, repair_workspace,
-    set_workspace_enabled,
+    cleanup_smb_host, create_workspace, delete_workspace, list_workspaces, refresh_workspace,
+    repair_workspace, set_workspace_enabled,
 };
 
 static WORKSPACE_OPERATION_LOCK: OnceLock<Mutex<()>> = OnceLock::new();

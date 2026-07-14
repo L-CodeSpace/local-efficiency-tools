@@ -13,6 +13,7 @@ pub(super) fn smb_unc_path(host: &str, remote_path: &str) -> AppResult<String> {
     Ok(format!(r"\\{}\{}", host.trim(), share.replace('/', "\\")))
 }
 
+#[cfg(target_os = "macos")]
 pub(super) fn qualified_username(connection: &RemoteConnection) -> String {
     match connection
         .domain

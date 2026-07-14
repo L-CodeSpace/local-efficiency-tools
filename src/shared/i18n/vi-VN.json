@@ -545,5 +545,14 @@
   "SMB 使用系统原生共享，FTP 使用已探测目录构建单一聚合入口。": "SMB dùng chia sẻ gốc của hệ thống. FTP tạo một lối vào tổng hợp từ các thư mục đã dò.",
   "SMB 优先": "Ưu tiên SMB",
   "原生 SMB": "SMB gốc",
-  "FTP 聚合": "FTP tổng hợp"
+  "FTP 聚合": "FTP tổng hợp",
+  "Windows SMB 登录方式": "Cách đăng nhập SMB trên Windows",
+  "自动协商（推荐）": "Tự động thương lượng (khuyến nghị)",
+  "仅用户名": "Chỉ tên người dùng",
+  "域\\用户名": "Miền\\tên người dùng",
+  "WORKGROUP 是工作组名称；NAS 本地账户通常优先使用仅用户名。": "WORKGROUP là tên nhóm làm việc; tài khoản cục bộ trên NAS thường ưu tiên chỉ dùng tên người dùng.",
+  "清理 SMB": "Dọn SMB",
+  "清理该主机的全部 SMB 映射": "Dọn tất cả ánh xạ SMB của máy chủ này",
+  "将断开当前 Windows 用户中所有来自 {host} 的 SMB 映射，包括非本应用创建的网络盘，并停用相关工作区。是否继续？": "Thao tác này sẽ ngắt mọi ánh xạ SMB từ {host} trong phiên người dùng Windows hiện tại, kể cả ổ đĩa mạng không do ứng dụng tạo, và tắt các không gian làm việc liên quan. Tiếp tục?",
+  "已清理 {count} 个来自 {host} 的 SMB 映射": "Đã dọn {count} ánh xạ SMB từ {host}"
 }

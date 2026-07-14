@@ -25,19 +25,27 @@ pub(super) fn mount_workspace(
     connection: &RemoteConnection,
     workspace: &MountWorkspace,
 ) -> AppResult<Vec<NativeSmbMount>> {
-    let mut mounted = Vec::new();
-    for binding in &workspace.bindings {
-        match mount_binding(app, connection, workspace, binding) {
-            Ok(item) => mounted.push(item),
-            Err(error) => {
-                for item in mounted.iter().rev() {
-                    unmount_item(app, item);
+    #[cfg(windows)]
+    {
+        return platform::mount_workspace(app, connection, workspace);
+    }
+
+    #[cfg(not(windows))]
+    {
+        let mut mounted = Vec::new();
+        for binding in &workspace.bindings {
+            match mount_binding(app, connection, workspace, binding) {
+                Ok(item) => mounted.push(item),
+                Err(error) => {
+                    for item in mounted.iter().rev() {
+                        unmount_item(app, item);
+                    }
+                    return Err(error);
                 }
-                return Err(error);
             }
         }
+        Ok(mounted)
     }
-    Ok(mounted)
 }
 
 pub(super) fn unmount_workspace(app: &AppHandle, mounts: &[NativeSmbMount]) {
@@ -54,7 +62,20 @@ pub(super) fn repair_workspace(
     repair_workspace_impl(app, connection, workspace)
 }
 
-#[cfg(any(windows, target_os = "macos"))]
+#[cfg(windows)]
+pub(super) fn cleanup_host(host: &str) -> AppResult<Vec<SmbMappingCleanupItem>> {
+    platform::cleanup_host(host)
+}
+
+#[cfg(not(windows))]
+pub(super) fn cleanup_host(_host: &str) -> AppResult<Vec<SmbMappingCleanupItem>> {
+    Err(AppError::new(
+        "mount_smb_cleanup_unsupported",
+        "当前平台不支持清理 Windows SMB 映射",
+    ))
+}
+
+#[cfg(target_os = "macos")]
 fn mount_binding(
     app: &AppHandle,
     connection: &RemoteConnection,
