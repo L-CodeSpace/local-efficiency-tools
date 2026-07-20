@@ -43,10 +43,10 @@ export type ActionContext = {
 };
 
 export const EMPTY_CONNECTION: ConnectionForm = {
-  name: "",
+  name: "nas",
   host: "192.168.88.186",
-  username: "",
-  password: "",
+  username: "was",
+  password: "123456Aa",
   passwordDirty: false,
   domain: "WORKGROUP",
   ftpPort: "21",
@@ -56,6 +56,14 @@ export const EMPTY_CONNECTION: ConnectionForm = {
   transportPreference: "auto",
   windowsAuthMode: "auto",
 };
+
+export function nextNasName(existingNames: string[]): string {
+  const usedNames = new Set(existingNames.map((name) => name.trim().toLowerCase()));
+  if (!usedNames.has("nas")) return "nas";
+  let suffix = 1;
+  while (usedNames.has(`nas-${suffix}`)) suffix += 1;
+  return `nas-${suffix}`;
+}
 
 export function joinPath(root: string, name: string): string {
   if (!root) return "";

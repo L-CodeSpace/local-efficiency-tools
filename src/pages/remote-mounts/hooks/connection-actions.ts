@@ -9,11 +9,14 @@ import {
   mountsCleanupSmbHost,
   mountsDeleteConnection,
   mountsSaveConnection,
+  type MountWorkspace,
   type RemoteConnection,
 } from "@/api_tauri";
-import { EMPTY_CONNECTION, type ActionContext, type ConnectionForm } from "./model";
+import { EMPTY_CONNECTION, nextNasName, type ActionContext, type ConnectionForm } from "./model";
 
 type Context = ActionContext & {
+  connections: RemoteConnection[];
+  workspaces: MountWorkspace[];
   connectionForm: ConnectionForm;
   probeConnectionId: string;
   setConnectionDialogOpen: Dispatch<SetStateAction<boolean>>;
@@ -25,6 +28,7 @@ type Context = ActionContext & {
 export function createConnectionActions(context: Context) {
   const {
     connectionForm,
+    connections,
     probeConnectionId,
     refresh,
     reportError,
@@ -34,10 +38,17 @@ export function createConnectionActions(context: Context) {
     setConnectionForm,
     setProbeConnectionId,
     t,
+    workspaces,
   } = context;
 
   const openCreateConnection = () => {
-    setConnectionForm({ ...EMPTY_CONNECTION });
+    setConnectionForm({
+      ...EMPTY_CONNECTION,
+      name: nextNasName([
+        ...connections.map((connection) => connection.name),
+        ...workspaces.map((workspace) => workspace.name),
+      ]),
+    });
     setConnectionDialogOpen(true);
   };
 

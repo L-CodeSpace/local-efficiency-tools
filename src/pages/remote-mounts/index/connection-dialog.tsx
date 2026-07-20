@@ -63,7 +63,7 @@ export function ConnectionDialog({ page }: { page: Page }) {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {t("WORKGROUP 是工作组名称；NAS 本地账户通常优先使用仅用户名。")}
+                {t("NAS 本地账户优先使用“主机\\用户名”，域账户使用“域\\用户名”。")}
               </p>
             </Field>
           ) : null}

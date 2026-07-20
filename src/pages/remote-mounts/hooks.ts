@@ -97,6 +97,8 @@ export function useRemoteMountsPage() {
   const common = { t, refresh, reportError, setBusyId };
   const connectionActions = createConnectionActions({
     ...common,
+    connections,
+    workspaces,
     connectionForm,
     probeConnectionId,
     setConnectionDialogOpen,

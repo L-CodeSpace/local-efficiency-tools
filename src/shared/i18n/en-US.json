@@ -557,7 +557,7 @@
   "自动协商（推荐）": "Automatic negotiation (recommended)",
   "仅用户名": "Username only",
   "域\\用户名": "Domain\\username",
-  "WORKGROUP 是工作组名称；NAS 本地账户通常优先使用仅用户名。": "WORKGROUP is a workgroup name; NAS local accounts usually work best with username only.",
+  "NAS 本地账户优先使用“主机\\用户名”，域账户使用“域\\用户名”。": "NAS local accounts prefer host\\username; domain accounts use domain\\username.",
   "清理 SMB": "Clean SMB",
   "清理该主机的全部 SMB 映射": "Clean all SMB mappings for this host",
   "将断开当前 Windows 用户中所有来自 {host} 的 SMB 映射，包括非本应用创建的网络盘，并停用相关工作区。是否继续？": "This will disconnect every SMB mapping from {host} in the current Windows user session, including network drives created outside this app, and disable related workspaces. Continue?",

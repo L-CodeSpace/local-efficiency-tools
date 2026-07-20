@@ -30,7 +30,7 @@ fn modes(items: &[AuthCandidate]) -> Vec<ResolvedAuthMode> {
 }
 
 #[test]
-fn workgroup_auto_prefers_plain_identity() {
+fn workgroup_auto_prefers_host_identity() {
     let result = candidates(
         &connection(Some("WORKGROUP"), WindowsSmbAuthMode::Auto),
         None,
@@ -38,10 +38,15 @@ fn workgroup_auto_prefers_plain_identity() {
     .unwrap();
     assert_eq!(
         modes(&result),
-        vec![ResolvedAuthMode::Plain, ResolvedAuthMode::Domain]
+        vec![
+            ResolvedAuthMode::Host,
+            ResolvedAuthMode::Plain,
+            ResolvedAuthMode::Domain
+        ]
     );
-    assert_eq!(result[0].username, "SUSU");
-    assert_eq!(result[1].username, "WORKGROUP\\SUSU");
+    assert_eq!(result[0].username, "192.168.88.186\\SUSU");
+    assert_eq!(result[1].username, "SUSU");
+    assert_eq!(result[2].username, "WORKGROUP\\SUSU");
 }
 
 #[test]
@@ -49,7 +54,11 @@ fn real_domain_auto_prefers_qualified_identity() {
     let result = candidates(&connection(Some("CORP"), WindowsSmbAuthMode::Auto), None).unwrap();
     assert_eq!(
         modes(&result),
-        vec![ResolvedAuthMode::Domain, ResolvedAuthMode::Plain]
+        vec![
+            ResolvedAuthMode::Domain,
+            ResolvedAuthMode::Host,
+            ResolvedAuthMode::Plain
+        ]
     );
 }
 

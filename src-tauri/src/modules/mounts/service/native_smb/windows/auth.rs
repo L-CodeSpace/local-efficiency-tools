@@ -1,6 +1,6 @@
 /*
  * 核心职责：生成 Windows SMB 登录身份候选并解释 WNet 认证错误。
- * 业务痛点：NAS 本地账户可能拒绝 WORKGROUP 前缀，需要受控协商用户名格式。
+ * 业务痛点：NAS 本地账户可能要求主机前缀并拒绝 WORKGROUP 前缀，需要受控协商用户名格式。
  * 能力边界：不创建网络盘，不持久化凭据，不记录用户名或密码。
  */
 
@@ -15,6 +15,7 @@ use windows_sys::Win32::Foundation::{
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum ResolvedAuthMode {
+    Host,
     Plain,
     Domain,
 }
@@ -22,6 +23,7 @@ pub(super) enum ResolvedAuthMode {
 impl ResolvedAuthMode {
     pub(super) fn label(self) -> &'static str {
         match self {
+            Self::Host => "host",
             Self::Plain => "plain",
             Self::Domain => "domain",
         }
@@ -94,6 +96,7 @@ pub(super) fn candidates(
         ));
     }
     let domain = connection.domain.as_deref().map(str::trim).unwrap_or("");
+    let host = connection.host.trim();
     if domain.contains('\0') {
         return Err(AppError::new(
             "mount_smb_domain_invalid",
@@ -108,7 +111,7 @@ pub(super) fn candidates(
     };
     modes
         .into_iter()
-        .map(|mode| candidate(mode, username, domain))
+        .map(|mode| candidate(mode, username, domain, host))
         .collect()
 }
 
@@ -123,16 +126,36 @@ fn configured_modes(
             "域登录方式需要填写 Windows SMB 域",
         )),
         WindowsSmbAuthMode::Domain => Ok(vec![ResolvedAuthMode::Domain]),
-        WindowsSmbAuthMode::Auto if domain.is_empty() => Ok(vec![ResolvedAuthMode::Plain]),
-        WindowsSmbAuthMode::Auto if domain.eq_ignore_ascii_case("WORKGROUP") => {
-            Ok(vec![ResolvedAuthMode::Plain, ResolvedAuthMode::Domain])
+        WindowsSmbAuthMode::Auto if domain.is_empty() => {
+            Ok(vec![ResolvedAuthMode::Host, ResolvedAuthMode::Plain])
         }
-        WindowsSmbAuthMode::Auto => Ok(vec![ResolvedAuthMode::Domain, ResolvedAuthMode::Plain]),
+        WindowsSmbAuthMode::Auto if domain.eq_ignore_ascii_case("WORKGROUP") => Ok(vec![
+            ResolvedAuthMode::Host,
+            ResolvedAuthMode::Plain,
+            ResolvedAuthMode::Domain,
+        ]),
+        WindowsSmbAuthMode::Auto => Ok(vec![
+            ResolvedAuthMode::Domain,
+            ResolvedAuthMode::Host,
+            ResolvedAuthMode::Plain,
+        ]),
     }
 }
 
-fn candidate(mode: ResolvedAuthMode, username: &str, domain: &str) -> AppResult<AuthCandidate> {
+fn candidate(
+    mode: ResolvedAuthMode,
+    username: &str,
+    domain: &str,
+    host: &str,
+) -> AppResult<AuthCandidate> {
     let username = match mode {
+        ResolvedAuthMode::Host if host.is_empty() || host.contains(['\\', '/']) => {
+            return Err(AppError::new(
+                "mount_smb_host_invalid",
+                "主机登录方式需要有效的 Windows SMB 主机",
+            ));
+        }
+        ResolvedAuthMode::Host => format!("{}\\{}", host, username),
         ResolvedAuthMode::Plain => username.to_string(),
         ResolvedAuthMode::Domain if domain.is_empty() => {
             return Err(AppError::new(
@@ -154,7 +177,10 @@ pub(super) fn is_retryable_auth_error(code: u32) -> bool {
 
 pub(super) fn connection_error(code: u32, attempted: &[ResolvedAuthMode]) -> AppError {
     let (error_code, message) = match code {
-        ERROR_INVALID_PASSWORD => ("mount_smb_auth_failed", "密码或 Windows 登录名格式不匹配"),
+        ERROR_INVALID_PASSWORD => (
+            "mount_smb_auth_failed",
+            "Windows SMB 认证失败；密码正确时通常是登录名格式或 NAS 账户权限不匹配",
+        ),
         ERROR_LOGON_FAILURE | ERROR_BAD_USERNAME => {
             ("mount_smb_auth_failed", "Windows SMB 用户名或密码不正确")
         }
